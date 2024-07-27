@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, FormControl, FormLabel, Input, Textarea, useToast, Spinner, Center } from '@chakra-ui/react';
 import NavBar from '../../../components/Navbar';
@@ -15,11 +15,7 @@ const EditArticlePage = ({ params }: { params: Params }) => {
   const toast = useToast();
   const router = useRouter();
 
-  useEffect(() => {
-    fetchArticle(id);
-  }, [id]);
-
-  const fetchArticle = async (id: string) => {
+  const fetchArticle = useCallback(async () => {
     try {
       const res = await fetch(`/api/articles/${id}`);
       const data = await res.json();
@@ -36,7 +32,11 @@ const EditArticlePage = ({ params }: { params: Params }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchArticle();
+  }, [fetchArticle]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
