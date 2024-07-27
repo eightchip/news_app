@@ -8,8 +8,8 @@ const Profile = () => {
 
   return (
     <Box p={5}>
-      <Heading mb={5}>Profile</Heading>
-      <Text>Email: {user?.email}</Text>
+      <Heading mb={5}>プロフィール</Heading>
+      <Text>メールアドレス: {user?.email}</Text>
     </Box>
   );
 };
