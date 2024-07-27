@@ -9,8 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@prisma/client": "^5.16.2",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.44.4",
+    "framer-motion": "^11.3.17",
     "next": "14.2.5",
+    "prisma": "^5.16.2",
     "react": "^18",
     "react-dom": "^18",
     "shadcn": "^1.0.0"
