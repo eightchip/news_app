@@ -7,13 +7,13 @@ const NavBar = () => {
   return (
     <Flex as="nav" bg="blue.300" color="white" p={4} justifyContent="space-between">
       <Flex>
-        <Link href="/" passHref legacyBehavior>
+        <Link href="/">
           <Button as="a" variant="ghost" mr={2}>ホーム</Button>
         </Link>
-        <Link href="/article/search" passHref legacyBehavior>
+        <Link href="/article/search">
           <Button as="a" variant="ghost" mr={2}>記事検索</Button>
         </Link>
-        <Link href="/article/manage" passHref legacyBehavior>
+        <Link href="/article/manage">
           <Button as="a" variant="ghost" mr={2}>記事編集</Button>
         </Link>
       </Flex>

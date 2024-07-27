@@ -76,7 +76,7 @@ const ArticleManage = () => {
               <Text fontWeight="bold">{article.title}</Text>
               <Spacer />
               <Flex>
-                <Link href={`/article/edit/${article.id}`} passHref>
+                <Link href={`/article/edit/${article.id}`}>
                   <Button as="a" size="sm" colorScheme="blue" mr={2}>Edit</Button>
                 </Link>
                 <Button size="sm" colorScheme="red" onClick={() => openDeleteDialog(article.id)}>Delete</Button>
