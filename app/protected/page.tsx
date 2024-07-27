@@ -1,7 +1,8 @@
 'use client';
+import { ComponentType } from 'react';
 import withAuth from '../../app/lib/withAuth';
 
-const Protected = () => {
+const Protected: ComponentType = () => {
   return (
     <div>
       <h1>Protected Page</h1>
@@ -10,4 +11,6 @@ const Protected = () => {
   );
 };
 
-export default withAuth(Protected);
+const AuthenticatedProtected = withAuth(Protected);
+
+export default AuthenticatedProtected;
