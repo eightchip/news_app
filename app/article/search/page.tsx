@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex, Select, VStack } from '@chakra-ui/react';
+import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex, Select, VStack, Spinner } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
 import { Article } from '../../types/Article';
 import Link from 'next/link';
@@ -27,6 +27,8 @@ const ArticleSearch = () => {
   const [sortOrder, setSortOrder] = useState('desc');
   const [allSourcesSelected, setAllSourcesSelected] = useState(true);
   const [allArticlesSelected, setAllArticlesSelected] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const router = useRouter();
   const supabase = createClientComponentClient();
@@ -58,10 +60,28 @@ const ArticleSearch = () => {
   }, [supabase, router, toast]);
 
   const searchArticles = async () => {
+    setIsSearching(true);
     const sourcesQuery = selectedSources.join(',');
-    const res = await fetch(`/api/news?q=${query}&sources=${sourcesQuery}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
-    const data = await res.json();
-    setArticles(data.articles);
+    try {
+      const res = await fetch(`/api/news?q=${query}&sources=${sourcesQuery}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
+      if (!res.ok) {
+        throw new Error('記事の取得に失敗しました');
+      }
+      const data = await res.json();
+      setArticles(data.articles || []); // データがない場合は空配列を設定
+    } catch (error) {
+      console.error('記事の検索中にエラーが発生しました:', error);
+      toast({
+        title: 'エラー',
+        description: '記事の検索中にエラーが発生しました。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      setArticles([]); // エラー時は空配列を設定
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleSourceChange = (sourceId: string) => {
@@ -84,6 +104,7 @@ const ArticleSearch = () => {
   };
 
   const saveSelectedArticles = async () => {
+    setIsSaving(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       toast({
@@ -94,6 +115,7 @@ const ArticleSearch = () => {
         isClosable: true,
       });
       router.push('/login');
+      setIsSaving(false);
       return;
     }
 
@@ -108,36 +130,54 @@ const ArticleSearch = () => {
       source: typeof article.source === 'string' ? article.source : article.source.name
     }));
 
-    const results = await Promise.all(preparedArticles.map(async (article) => {
-      try {
-        const response = await fetch('/api/articles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(article),
-          credentials: 'include',
-        });
-        if (!response.ok) throw new Error(`記事の保存に失敗しました: ${article.title}`);
-        return { success: true, article };
-      } catch (error) {
-        console.error(error);
-        return { 
-          success: false, 
-          article, 
-          error: error instanceof Error ? error.message : '未知のエラーが発生しました'
-        };
-      }
-    }));
+    try {
+      const results = await Promise.all(preparedArticles.map(async (article) => {
+        try {
+          const response = await fetch('/api/articles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(article),
+            credentials: 'include',
+          });
+          if (!response.ok) throw new Error(`記事の保存に失敗しました: ${article.title}`);
+          return { success: true, article };
+        } catch (error) {
+          console.error(error);
+          return { 
+            success: false, 
+            article, 
+            error: error instanceof Error ? error.message : '未知のエラーが発生しました'
+          };
+        }
+      }));
 
-    const successfulSaves = results.filter(r => r.success);
-    const failedSaves = results.filter(r => !r.success);
+      const successfulSaves = results.filter(r => r.success);
+      const failedSaves = results.filter(r => !r.success);
 
-    toast({
-      title: '保存結果',
-      description: `${successfulSaves.length}件の記事が保存されました。${failedSaves.length}件の記事の保存に失敗しました。`,
-      status: successfulSaves.length > 0 ? 'success' : 'warning',
-      duration: 5000,
-      isClosable: true,
-    });
+      toast({
+        title: '保存結果',
+        description: `${successfulSaves.length}件の記事が保存されました。${failedSaves.length}件の記事の保存に失敗しました。`,
+        status: successfulSaves.length > 0 ? 'success' : 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+
+      // 保存が成功した記事を選択リストから削除
+      setSelectedArticles(prev => prev.filter(article => 
+        !successfulSaves.some(save => save.article.url === article.url)
+      ));
+    } catch (error) {
+      console.error('記事の保存中にエラーが発生しました:', error);
+      toast({
+        title: 'エラー',
+        description: '記事の保存中にエラーが発生しました。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAllSourcesToggle = () => {
@@ -158,7 +198,7 @@ const ArticleSearch = () => {
     setAllArticlesSelected(!allArticlesSelected);
   };
 
-  const paginatedArticles = articles.slice((page - 1) * articlesPerPage, page * articlesPerPage);
+  const paginatedArticles = articles ? articles.slice((page - 1) * articlesPerPage, page * articlesPerPage) : [];
 
   if (isLoading) {
     return <Box>Loading...</Box>;
@@ -209,7 +249,16 @@ const ArticleSearch = () => {
           <Button onClick={handleSortOrderChange} mr={2}>
             {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
           </Button>
-          <Button onClick={searchArticles} colorScheme="blue">Search</Button>
+          <Button onClick={searchArticles} colorScheme="blue" isDisabled={isSearching}>
+            {isSearching ? (
+              <>
+                <Spinner size="sm" mr={2} />
+                検索しています...
+              </>
+            ) : (
+              'Search'
+            )}
+          </Button>
         </Flex>
         <Flex justifyContent="center" mb={3}>
           <Checkbox
@@ -243,7 +292,21 @@ const ArticleSearch = () => {
           <Button onClick={() => setPage(page > 1 ? page - 1 : 1)} mr={2}>Previous</Button>
           <Button onClick={() => setPage(page + 1)}>Next</Button>
         </Flex>
-        <Button onClick={saveSelectedArticles} mt={5} colorScheme="green">Save Selected Articles</Button>
+        <Button 
+          onClick={saveSelectedArticles} 
+          mt={5} 
+          colorScheme="green" 
+          isDisabled={isSaving || selectedArticles.length === 0}
+        >
+          {isSaving ? (
+            <>
+              <Spinner size="sm" mr={2} />
+              記事を保存しています...
+            </>
+          ) : (
+            'Save Selected Articles'
+          )}
+        </Button>
       </Box>
     </Box>
   );

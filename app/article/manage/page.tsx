@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Select } from '@chakra-ui/react';
+import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Select, Spinner, VStack } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Article } from '../../types/Article';
@@ -123,7 +123,15 @@ const ArticleManage = () => {
   };
 
   if (isLoading) {
-    return <Box>読み込み中...</Box>;
+    return (
+      <Box>
+        <NavBar />
+        <VStack spacing={4} align="center" justify="center" height="calc(100vh - 64px)">
+          <Spinner size="xl" color="blue.500" />
+          <Text fontSize="lg">記事を読み込んでいます...</Text>
+        </VStack>
+      </Box>
+    );
   }
 
   if (error) {
