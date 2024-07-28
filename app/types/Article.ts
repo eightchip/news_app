@@ -6,6 +6,8 @@ export interface Article {
   imageUrl?: string;
   urlToImage?: string;
   userId: number;
-  source: string; // Changed from object to string
+  source: {
+    name: string;
+  };
   publishedAt: string;
 }
