@@ -90,7 +90,7 @@ const ArticleSearch = () => {
       url: article.url,
       imageUrl: article.urlToImage || 'No Image',
       userId: userId,
-      source: article.source?.name || 'Unknown'
+      source: article.source
     }));
 
     const results = await Promise.all(preparedArticles.map(async (article) => {
@@ -104,7 +104,11 @@ const ArticleSearch = () => {
         return { success: true, article };
       } catch (error) {
         console.error(error);
-        return { success: false, article, error: error.message };
+        return { 
+          success: false, 
+          article, 
+          error: error instanceof Error ? error.message : '未知のエラーが発生しました'
+        };
       }
     }));
 
@@ -207,7 +211,7 @@ const ArticleSearch = () => {
                 <Link href={article.url} target="_blank" rel="noopener noreferrer" passHref>
                   <Text as="span" color="blue.500">{article.title}</Text>
                 </Link>
-                <Text fontSize="sm">{article.source.name} - {new Date(article.publishedAt).toLocaleString()}</Text>
+                <Text fontSize="sm">{article.source} - {new Date(article.publishedAt).toLocaleString()}</Text>
                 <Text fontSize="sm">{article.description}</Text>
               </Box>
             </ListItem>
