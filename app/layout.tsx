@@ -1,5 +1,6 @@
 // app/layout.tsx
 import { ChakraProvider } from '@chakra-ui/react';
+import { AuthProvider } from '../app/contexts/AuthContext';
 
 export const metadata = {
   title: 'My App',
@@ -15,7 +16,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ChakraProvider>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ChakraProvider>
       </body>
     </html>

@@ -1,87 +1,71 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../lib/supabase';
-import { Box, Button, FormControl, FormLabel, Input,  Heading, useToast, Flex, VStack, Text, Link } from '@chakra-ui/react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Box, Button, Input, VStack, useToast } from '@chakra-ui/react';
 
-const Login = () => {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const toast = useToast();
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const supabase = createClientComponentClient();
+  const toast = useToast();
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        router.push('/article/search'); // Redirect to article search page
+        router.push('/article/search');
+      } else {
+        setIsLoading(false);
       }
     };
     checkUser();
-  }, [router]);
+  }, [supabase, router]);
 
-  const handleLogin = async () => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      router.push('/article/search');
+    } catch (error) {
       toast({
-        title: 'Error',
+        title: 'ログインエラー',
         description: error.message,
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
-    } else {
-      toast({
-        title: 'Success',
-        description: 'Logged in successfully!',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
-      router.push('/article/search'); // Redirect to article search page
     }
   };
 
-  return (
-    <Flex height="100vh" alignItems="center" justifyContent="center">
-      <Box width="100%" maxWidth="400px" p={5} borderWidth={1} borderRadius="lg" boxShadow="lg">
-        <Heading mb={5} textAlign="center">Login</Heading>
-        <VStack spacing={4}>
-          <FormControl id="email" isRequired mb={4} borderBottom="none">
-            <FormLabel mb={2}>Email</FormLabel>
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              borderRadius="md"
-              focusBorderColor="blue.500"
-            />
-          </FormControl>
-          <FormControl id="password" isRequired mb={4} borderBottom="none">
-            <FormLabel mb={2}>Password</FormLabel>
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              borderRadius="md"
-              focusBorderColor="blue.500"
-            />
-          </FormControl>
-          <Button onClick={handleLogin} colorScheme="blue" width="full">
-            Login
-          </Button>
-          <Text mt={2}>
-            アカウントをお持ちでない方は <Link color="blue.500" href="/signup">Sign Up</Link>
-          </Text>
-        </VStack>
-      </Box>
-    </Flex>
-  );
-};
+  if (isLoading) {
+    return <Box>Loading...</Box>;
+  }
 
-export default Login;
+  return (
+    <Box maxWidth="400px" margin="auto" mt={8}>
+      <form onSubmit={handleLogin}>
+        <VStack spacing={4}>
+          <Input
+            type="email"
+            placeholder="メールアドレス"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Input
+            type="password"
+            placeholder="パスワード"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <Button type="submit" colorScheme="blue" width="100%">
+            ログイン
+          </Button>
+        </VStack>
+      </form>
+    </Box>
+  );
+}

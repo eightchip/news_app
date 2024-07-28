@@ -41,7 +41,10 @@ export const POST = async (req: NextRequest) => {
     // セッションの確認
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      return NextResponse.json({ message: "認証エラー" }, { status: 401 });
+      return new Response(JSON.stringify({ error: '認証されていません' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     const { title, description, url, imageUrl } = await req.json();

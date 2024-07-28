@@ -3,9 +3,8 @@ import prisma from '../../../lib/prisma';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
-const supabase = createRouteHandlerClient({ cookies });
-
 export const GET = async (req: NextRequest, { params }: { params: { id: string } }) => {
+  const supabase = createRouteHandlerClient({ cookies });
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -31,6 +30,7 @@ export const GET = async (req: NextRequest, { params }: { params: { id: string }
 };
 
 export const DELETE = async (req: NextRequest, { params }: { params: { id: string } }) => {
+  const supabase = createRouteHandlerClient({ cookies });
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
@@ -52,6 +52,7 @@ export const DELETE = async (req: NextRequest, { params }: { params: { id: strin
 };
 
 export const PUT = async (req: NextRequest, { params }: { params: { id: string } }) => {
+  const supabase = createRouteHandlerClient({ cookies });
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {

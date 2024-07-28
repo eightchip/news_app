@@ -1,10 +1,11 @@
 'use client';
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex, Select, VStack } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Article } from '../../types/Article';
+import Link from 'next/link';
 
 const englishSources = [
   { id: 'bbc-news', name: 'BBC News' },
@@ -15,31 +16,46 @@ const englishSources = [
 ];
 
 const ArticleSearch = () => {
-  const supabase = createClientComponentClient();
+  const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
   const [page, setPage] = useState(1);
-  const articlesPerPage = 20;
-  const toast = useToast();
   const [selectedSources, setSelectedSources] = useState(englishSources.map(source => source.id));
   const [sortBy, setSortBy] = useState('publishedAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const [allSourcesSelected, setAllSourcesSelected] = useState(true);
   const [allArticlesSelected, setAllArticlesSelected] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+  const toast = useToast();
+  const articlesPerPage = 20;
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUserId(session.user.id);
-      } else {
-        console.log('セッションがありません');
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setUserId(session.user.id);
+          setIsLoading(false);
+        } else {
+          router.push('/login');
+        }
+      } catch (error) {
+        console.error('認証チェックエラー:', error);
+        toast({
+          title: '認証エラー',
+          description: '認証状態の確認中にエラーが発生しました。',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
       }
     };
-    fetchUser();
-  }, [supabase]);
+    checkAuth();
+  }, [supabase, router, toast]);
 
   const searchArticles = async () => {
     const sourcesQuery = selectedSources.join(',');
@@ -68,21 +84,20 @@ const ArticleSearch = () => {
   };
 
   const saveSelectedArticles = async () => {
-    if (!userId) {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setUserId(session.user.id);
-      } else {
-        toast({
-          title: 'エラー',
-          description: 'ユーザーIDが取得できません。ログインしているか確認してください。',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        return;
-      }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: 'エラー',
+        description: 'セッションが無効です。再度ログインしてください。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      router.push('/login');
+      return;
     }
+
+    const userId = session.user.id;
 
     const preparedArticles = selectedArticles.map(article => ({
       title: article.title,
@@ -99,6 +114,7 @@ const ArticleSearch = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(article),
+          credentials: 'include',
         });
         if (!response.ok) throw new Error(`記事の保存に失敗しました: ${article.title}`);
         return { success: true, article };
@@ -143,6 +159,10 @@ const ArticleSearch = () => {
   };
 
   const paginatedArticles = articles.slice((page - 1) * articlesPerPage, page * articlesPerPage);
+
+  if (isLoading) {
+    return <Box>Loading...</Box>;
+  }
 
   return (
     <Box>
@@ -208,7 +228,7 @@ const ArticleSearch = () => {
                 mr={2}
               />
               <Box>
-                <Link href={article.url} target="_blank" rel="noopener noreferrer" passHref>
+                <Link href={article.url} target="_blank" rel="noopener noreferrer">
                   <Text as="span" color="blue.500">{article.title}</Text>
                 </Link>
                 <Text fontSize="sm">
