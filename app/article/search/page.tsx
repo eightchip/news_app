@@ -90,7 +90,7 @@ const ArticleSearch = () => {
       url: article.url,
       imageUrl: article.urlToImage || 'No Image',
       userId: userId,
-      source: article.source
+      source: typeof article.source === 'string' ? article.source : article.source.name
     }));
 
     const results = await Promise.all(preparedArticles.map(async (article) => {
@@ -211,7 +211,9 @@ const ArticleSearch = () => {
                 <Link href={article.url} target="_blank" rel="noopener noreferrer" passHref>
                   <Text as="span" color="blue.500">{article.title}</Text>
                 </Link>
-                <Text fontSize="sm">{article.source} - {new Date(article.publishedAt).toLocaleString()}</Text>
+                <Text fontSize="sm">
+                  {typeof article.source === 'string' ? article.source : article.source.name} - {new Date(article.publishedAt).toLocaleString()}
+                </Text>
                 <Text fontSize="sm">{article.description}</Text>
               </Box>
             </ListItem>
