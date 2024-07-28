@@ -4,12 +4,8 @@ import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, Aler
 import NavBar from '../../components/Navbar';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Article } from '../../types/Article';
-import { useRouter } from 'next/navigation';
 
 const ArticleManage = () => {
-  const [isRouterReady, setIsRouterReady] = useState(false);
-  const router = useRouter();
-
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,17 +18,7 @@ const ArticleManage = () => {
   const supabase = createClientComponentClient();
 
   useEffect(() => {
-    setIsRouterReady(true);
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-      } else {
-        fetchArticles();
-      }
-    };
-
-    checkAuth();
+    fetchArticles();
   }, []);
 
   const fetchArticles = async () => {
@@ -40,24 +26,23 @@ const ArticleManage = () => {
     setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('クライアント - セッション:', session);
+      console.log('セッション:', session);
       const userId = session?.user?.id;
-      console.log('クライアント - ユーザーID:', userId);
+      console.log('ユーザーID:', userId);
 
       if (!userId) {
         throw new Error('ユーザーが認証されていません');
       }
 
-      const res = await fetch('/api/articles');
+      const res = await fetch(`/api/articles?userId=${userId}`);
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || '記事の取得に失敗しました');
+        throw new Error('記事の取得に失敗しました');
       }
       const data = await res.json();
-      console.log('クライアント - 取得した記事:', data);
+      console.log('取得した記事:', data);
       setArticles(data);
     } catch (error) {
-      console.error('クライアント - 記事の取得エラー:', error);
+      console.error('記事の取得エラー:', error);
       setError(error instanceof Error ? error.message : '未知のエラーが発生しました');
       toast({
         title: 'エラー',
@@ -86,7 +71,9 @@ const ArticleManage = () => {
   const sortArticles = (sortByField: 'source' | 'publishedAt', order: 'asc' | 'desc') => {
     const sortedArticles = [...articles].sort((a, b) => {
       if (sortByField === 'source') {
-        return order === 'asc' ? a.source.localeCompare(b.source) : b.source.localeCompare(a.source);
+        const sourceA = typeof a.source === 'string' ? a.source : a.source.name;
+        const sourceB = typeof b.source === 'string' ? b.source : b.source.name;
+        return order === 'asc' ? sourceA.localeCompare(sourceB) : sourceB.localeCompare(sourceA);
       } else {
         return order === 'asc' 
           ? new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime() 
@@ -135,10 +122,6 @@ const ArticleManage = () => {
     setIsOpen(true);
   };
 
-  if (!isRouterReady) {
-    return null; // または読み込み中の表示
-  }
-
   if (isLoading) {
     return <Box>読み込み中...</Box>;
   }
@@ -171,7 +154,7 @@ const ArticleManage = () => {
                   <Flex alignItems="center">
                     <Box>
                       <Text fontWeight="bold">{article.title}</Text>
-                      <Text fontSize="sm">{article.source} - {new Date(article.publishedAt).toLocaleString()}</Text>
+                      <Text fontSize="sm">{article.source.name} - {new Date(article.publishedAt).toLocaleString()}</Text>
                       <Link href={article.url} color="blue.500" isExternal>
                         Read original
                       </Link>
