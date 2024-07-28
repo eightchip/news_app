@@ -1,60 +1,81 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
-import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex } from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
+import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex, Select, VStack } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Article } from '../../types/Article';
+
+const englishSources = [
+  { id: 'bbc-news', name: 'BBC News' },
+  { id: 'cnn', name: 'CNN' },
+  { id: 'the-new-york-times', name: 'The New York Times' },
+  { id: 'the-guardian-uk', name: 'The Guardian' },
+  { id: 'reuters', name: 'Reuters' },
+];
 
 const ArticleSearch = () => {
+  const supabase = createClientComponentClient();
   const [query, setQuery] = useState('');
-  const [articles, setArticles] = useState([]);
-  const [selectedArticles, setSelectedArticles] = useState([]);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [selectedArticles, setSelectedArticles] = useState<Article[]>([]);
   const [page, setPage] = useState(1);
   const articlesPerPage = 20;
   const toast = useToast();
-  const [allChecked, setAllChecked] = useState(false);
+  const [selectedSources, setSelectedSources] = useState(englishSources.map(source => source.id));
+  const [sortBy, setSortBy] = useState('publishedAt');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [allSourcesSelected, setAllSourcesSelected] = useState(true);
+  const [allArticlesSelected, setAllArticlesSelected] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUserId(session.user.id);
+      } else {
+        console.log('セッションがありません');
+      }
+    };
+    fetchUser();
+  }, [supabase]);
 
   const searchArticles = async () => {
-    const res = await fetch(`/api/news?q=${query}`);
+    const sourcesQuery = selectedSources.join(',');
+    const res = await fetch(`/api/news?q=${query}&sources=${sourcesQuery}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
     const data = await res.json();
     setArticles(data.articles);
   };
 
-  const handleCheckboxChange = (index: number) => {
-    const article = articles[(page - 1) * articlesPerPage + index];
-    if (selectedArticles.includes(article)) {
-      setSelectedArticles(selectedArticles.filter((_, i) => i !== index));
-    } else {
-      setSelectedArticles([...selectedArticles, article]);
-    }
+  const handleSourceChange = (sourceId: string) => {
+    setSelectedSources(prev => 
+      prev.includes(sourceId) ? prev.filter(id => id !== sourceId) : [...prev, sourceId]
+    );
   };
 
-  const handleCheckAll = () => {
-    if (allChecked) {
-      setSelectedArticles([]);
-    } else {
-      setSelectedArticles(paginatedArticles);
-    }
-    setAllChecked(!allChecked);
+  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(event.target.value);
+  };
+
+  const handleSortOrderChange = () => {
+    setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+  };
+
+  const handleCheckboxChange = (index: number) => {
+    const article = articles[(page - 1) * articlesPerPage + index];
+    setSelectedArticles(prev => [...prev, article]);
   };
 
   const saveSelectedArticles = async () => {
-    for (const article of selectedArticles) {
-      const response = await fetch('/api/articles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: (article as any).title ?? 'No Title',
-          content: (article as any).content ?? 'No Content',
-          imageUrl: (article as any).urlToImage ?? 'No Image',
-          userId: 1, // ユーザーIDを適切に設定
-        }),
-      });
-
-      if (!response.ok) {
-        console.error('Failed to save article');
+    if (!userId) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUserId(session.user.id);
+      } else {
         toast({
-          title: 'Error',
-          description: 'Failed to save some articles',
+          title: 'エラー',
+          description: 'ユーザーIDが取得できません。ログインしているか確認してください。',
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -62,13 +83,59 @@ const ArticleSearch = () => {
         return;
       }
     }
+
+    const preparedArticles = selectedArticles.map(article => ({
+      title: article.title,
+      description: article.description,
+      url: article.url,
+      imageUrl: article.urlToImage || 'No Image',
+      userId: userId,
+      source: article.source?.name || 'Unknown'
+    }));
+
+    const results = await Promise.all(preparedArticles.map(async (article) => {
+      try {
+        const response = await fetch('/api/articles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(article),
+        });
+        if (!response.ok) throw new Error(`記事の保存に失敗しました: ${article.title}`);
+        return { success: true, article };
+      } catch (error) {
+        console.error(error);
+        return { success: false, article, error: error.message };
+      }
+    }));
+
+    const successfulSaves = results.filter(r => r.success);
+    const failedSaves = results.filter(r => !r.success);
+
     toast({
-      title: 'Success',
-      description: 'Selected articles saved successfully!',
-      status: 'success',
+      title: '保存結果',
+      description: `${successfulSaves.length}件の記事が保存されました。${failedSaves.length}件の記事の保存に失敗しました。`,
+      status: successfulSaves.length > 0 ? 'success' : 'warning',
       duration: 5000,
       isClosable: true,
     });
+  };
+
+  const handleAllSourcesToggle = () => {
+    if (allSourcesSelected) {
+      setSelectedSources([]);
+    } else {
+      setSelectedSources(englishSources.map(source => source.id));
+    }
+    setAllSourcesSelected(!allSourcesSelected);
+  };
+
+  const handleAllArticlesToggle = () => {
+    if (allArticlesSelected) {
+      setSelectedArticles([]);
+    } else {
+      setSelectedArticles(paginatedArticles);
+    }
+    setAllArticlesSelected(!allArticlesSelected);
   };
 
   const paginatedArticles = articles.slice((page - 1) * articlesPerPage, page * articlesPerPage);
@@ -87,23 +154,62 @@ const ArticleSearch = () => {
           mx="auto"
           width="50%"
         />
+        <VStack spacing={4} align="stretch" mb={5}>
+          <Flex justifyContent="center" flexWrap="wrap">
+            <Checkbox
+              isChecked={allSourcesSelected}
+              onChange={handleAllSourcesToggle}
+              mr={4}
+            >
+              check all sources
+            </Checkbox>
+          </Flex>
+          <Flex justifyContent="center" flexWrap="wrap">
+            {englishSources.map(source => (
+              <Checkbox
+                key={source.id}
+                isChecked={selectedSources.includes(source.id)}
+                onChange={() => handleSourceChange(source.id)}
+                mr={4}
+              >
+                {source.name}
+              </Checkbox>
+            ))}
+          </Flex>
+        </VStack>
         <Flex justifyContent="center" mb={5}>
-          <Button onClick={searchArticles} colorScheme="blue" mr={2}>Search</Button>
-          <Button onClick={handleCheckAll} colorScheme="blue">
-            {allChecked ? 'Uncheck All' : 'Check All'}
+          <Select value={sortBy} onChange={handleSortChange} mr={2} width="auto">
+            <option value="publishedAt">Published Date</option>
+            <option value="source">Source</option>
+          </Select>
+          <Button onClick={handleSortOrderChange} mr={2}>
+            {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
           </Button>
+          <Button onClick={searchArticles} colorScheme="blue">Search</Button>
+        </Flex>
+        <Flex justifyContent="center" mb={3}>
+          <Checkbox
+            isChecked={allArticlesSelected}
+            onChange={handleAllArticlesToggle}
+          >
+            check all
+          </Checkbox>
         </Flex>
         <List spacing={3} textAlign="left" mx="auto" width="50%">
           {paginatedArticles.map((article, index) => (
             <ListItem key={index} display="flex" alignItems="center">
               <Checkbox
-                isChecked={selectedArticles.includes(articles[(page - 1) * articlesPerPage + index])}
+                isChecked={selectedArticles.includes(article)}
                 onChange={() => handleCheckboxChange(index)}
                 mr={2}
               />
-              <Link href={(article as any).url} target="_blank" rel="noopener noreferrer" passHref>
-                <Text as="span" color="blue.500">{(article as any).title}</Text>
-              </Link>
+              <Box>
+                <Link href={article.url} target="_blank" rel="noopener noreferrer" passHref>
+                  <Text as="span" color="blue.500">{article.title}</Text>
+                </Link>
+                <Text fontSize="sm">{article.source.name} - {new Date(article.publishedAt).toLocaleString()}</Text>
+                <Text fontSize="sm">{article.description}</Text>
+              </Box>
             </ListItem>
           ))}
         </List>

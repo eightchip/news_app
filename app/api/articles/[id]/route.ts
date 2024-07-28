@@ -1,13 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+
+const supabase = createRouteHandlerClient({ cookies });
 
 export const GET = async (req: NextRequest, { params }: { params: { id: string } }) => {
   try {
-    const id = parseInt(params.id);
-    const article = await prisma.article.findUnique({ where: { id } });
-    return NextResponse.json({ article });
-  } catch (err) {
-    return NextResponse.json({ message: "Error", err }, { status: 500 });
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return NextResponse.json({ error: '認証されていません' }, { status: 401 });
+    }
+
+    const articleId = parseInt(params.id);
+    const article = await prisma.article.findUnique({
+      where: { id: articleId, userId: session.user.id },
+    });
+
+    if (!article) {
+      return NextResponse.json({ error: '記事が見つかりません' }, { status: 404 });
+    }
+
+    return NextResponse.json(article);
+  } catch (error) {
+    console.error('記事取得エラー:', error);
+    return NextResponse.json({ error: 'サーバーエラー' }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
@@ -15,11 +32,20 @@ export const GET = async (req: NextRequest, { params }: { params: { id: string }
 
 export const DELETE = async (req: NextRequest, { params }: { params: { id: string } }) => {
   try {
-    const id = parseInt(params.id);
-    await prisma.article.delete({ where: { id } });
-    return NextResponse.json({ message: 'Article deleted' }, { status: 200 });
-  } catch (err) {
-    return NextResponse.json({ message: "Error", err }, { status: 500 });
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return NextResponse.json({ error: '認証されていません' }, { status: 401 });
+    }
+
+    const articleId = parseInt(params.id);
+    const deletedArticle = await prisma.article.delete({
+      where: { id: articleId, userId: session.user.id },
+    });
+
+    return NextResponse.json(deletedArticle);
+  } catch (error) {
+    console.error('記事削除エラー:', error);
+    return NextResponse.json({ error: 'サーバーエラー' }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
@@ -27,16 +53,21 @@ export const DELETE = async (req: NextRequest, { params }: { params: { id: strin
 
 export const PUT = async (req: NextRequest, { params }: { params: { id: string } }) => {
   try {
-    const id = parseInt(params.id);
-    const { title, content, imageUrl } = await req.json();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      return NextResponse.json({ error: '認証されていません' }, { status: 401 });
+    }
+
+    const articleId = parseInt(params.id);
+    const { title, description, url, imageUrl } = await req.json();
     const updatedArticle = await prisma.article.update({
-      where: { id },
-      data: { title, content, imageUrl }
+      where: { id: articleId, userId: session.user.id },
+      data: { title, description, url, imageUrl }
     });
-    return NextResponse.json({ updatedArticle });
-  } catch (err) {
-    console.error('Error updating article:', err);
-    return NextResponse.json({ message: "Error updating article", err }, { status: 500 });
+    return NextResponse.json(updatedArticle);
+  } catch (error) {
+    console.error('記事更新エラー:', error);
+    return NextResponse.json({ error: 'サーバーエラー' }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
