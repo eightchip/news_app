@@ -1,7 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, FormControl, FormLabel, Input, Heading, useToast, Flex, VStack, Text, Link } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, Heading, useToast, Flex, VStack, Text} from '@chakra-ui/react';
+import NextLink from 'next/link';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Loading from '../components/Loading';
 
@@ -37,10 +38,7 @@ const Login = () => {
         duration: 5000,
         isClosable: true,
       });
-      // ログイン成功後、少し遅延を入れてからリダイレクト
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 1000);
+      router.push('/article/search');
     }
   };
 
@@ -75,7 +73,7 @@ const Login = () => {
             Login
           </Button>
           <Text mt={2}>
-            アカウントをお持ちでない方は <Link color="blue.500" href="/signup">Signup</Link>
+            アカウントをお持ちでない方は <NextLink color="blue.500" href="/signup">Signup</NextLink>
           </Text>
         </VStack>
       </Box>
