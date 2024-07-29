@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, FormControl, FormLabel, Input, Heading, useToast, Flex, VStack, Text} from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, Heading, useToast, Flex, VStack, Text } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Loading from '../components/Loading';
