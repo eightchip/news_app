@@ -69,7 +69,14 @@ const Signup = () => {
             Sign Up
           </Button>
           <Text mt={2}>
-            既にアカウントをお持ちの方は <Link color="blue.500" href="/login">Login</Link>
+            既にアカウントをお持ちの方は{' '}
+            <Link
+              href="/login"
+              color="blue.500"
+              _hover={{ textDecoration: 'underline' }}
+            >
+              Login
+            </Link>
           </Text>
         </VStack>
       </Box>
