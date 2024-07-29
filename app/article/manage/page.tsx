@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Select, Spinner, VStack } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -17,11 +17,7 @@ const ArticleManage = () => {
   const toast = useToast();
   const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    fetchArticles();
-  }, []);
-
-  const fetchArticles = async () => {
+  const fetchArticles = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -54,7 +50,11 @@ const ArticleManage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchArticles();
+  }, [fetchArticles]);
 
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSortBy = event.target.value as 'publishedAt' | 'source';

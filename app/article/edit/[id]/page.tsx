@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, FormControl, FormLabel, Input, Textarea, useToast } from '@chakra-ui/react';
 import NavBar from '../../../components/Navbar';
@@ -15,11 +15,7 @@ const EditArticlePage = ({ params }: { params: Params }) => {
   const toast = useToast();
   const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    fetchArticle();
-  }, []);
-
-  const fetchArticle = async () => {
+  const fetchArticle = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       const res = await fetch(`/api/articles/${params.id}`);
@@ -32,7 +28,11 @@ const EditArticlePage = ({ params }: { params: Params }) => {
     } else {
       router.push('/login');
     }
-  };
+  }, [params.id, router, supabase]);
+
+  useEffect(() => {
+    fetchArticle();
+  }, [fetchArticle]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
