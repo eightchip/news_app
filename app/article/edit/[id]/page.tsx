@@ -17,16 +17,18 @@ const EditArticlePage = ({ params }: { params: Params }) => {
 
   const fetchArticle = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const res = await fetch(`/api/articles/${params.id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setArticle(data);
-      } else {
-        console.error('記事の取得に失敗しました');
-      }
+    if (!session) {
+      router.push('/login'); // セッションがない場合はリダイレクト
+      return; // ここで処理を終了
+    }
+    
+    const res = await fetch(`/api/articles/${params.id}`);
+    if (res.ok) {
+      const data = await res.json();
+      setArticle(data);
     } else {
-      router.push('/login');
+      console.error('記事の取得に失敗しました');
+      // エラーハンドリングを追加
     }
   }, [params.id, router, supabase]);
 
@@ -43,9 +45,10 @@ const EditArticlePage = ({ params }: { params: Params }) => {
     });
     if (res.ok) {
       toast({ title: '記事を更新しました', status: 'success' });
-      router.push('/article/manage');
+      router.push('/article/manage'); // 更新成功時のみリダイレクト
     } else {
       toast({ title: '更新に失敗しました', status: 'error' });
+      // エラーハンドリングを追加
     }
   };
 
