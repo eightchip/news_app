@@ -50,7 +50,7 @@ const ArticleManage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, supabase.auth]);
 
   useEffect(() => {
     fetchArticles();

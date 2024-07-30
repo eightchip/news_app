@@ -1,26 +1,26 @@
-import React, { useEffect, ComponentType } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from './auth';
+// import React, { useEffect, ComponentType } from 'react';
+// import { useRouter } from 'next/navigation';
+// import { useAuth } from './auth';
 
-function withAuth<P extends {}>(WrappedComponent: ComponentType<P>): ComponentType<P> {
-  const WithAuth: React.FC<P> = (props) => {
-    const router = useRouter();
-    const user = useAuth();
+// function withAuth<P extends {}>(WrappedComponent: ComponentType<P>): ComponentType<P> {
+//   const WithAuth: React.FC<P> = (props) => {
+//     const router = useRouter();
+//     const user = useAuth();
 
-    useEffect(() => {
-      if (!user) {
-        router.push('/login');
-      }
-    }, [user, router]);
+//     useEffect(() => {
+//       if (!user) {
+//         router.push('/login');
+//       }
+//     }, [user, router]);
 
-    if (!user) {
-      return null;
-    }
+//     if (!user) {
+//       return null;
+//     }
 
-    return <WrappedComponent {...props} />;
-  };
+//     return <WrappedComponent {...props} />;
+//   };
 
-  return WithAuth;
-}
+//   return WithAuth;
+// }
 
-export default withAuth;
+// export default withAuth;
