@@ -1,17 +1,27 @@
-// app/article/edit/[id]/page.tsx
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, FormControl, FormLabel, Input, Textarea, useToast } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, Textarea, useToast, Icon } from '@chakra-ui/react';
+import { FaSave } from 'react-icons/fa';
 import NavBar from '../../../components/Navbar';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { textToSpeech } from '../../../lib/textToSpeech';
+import { ReadAloudButton } from '../../../components/ReadAloudButton';
 
 interface Params {
   id: string;
 }
 
+interface Article {
+  title: string;
+  description: string;
+  url: string;
+  imageUrl: string;
+}
+
 const EditArticlePage = ({ params }: { params: Params }) => {
-  const [article, setArticle] = useState({ title: '', description: '', url: '', imageUrl: '' });
+  const [article, setArticle] = useState<Article>({ title: '', description: '', url: '', imageUrl: '' });
+  const [isPlaying, setIsPlaying] = useState(false);
   const router = useRouter();
   const toast = useToast();
   const supabase = createClientComponentClient();
@@ -58,6 +68,35 @@ const EditArticlePage = ({ params }: { params: Params }) => {
     }
   };
 
+  const handlePlay = async (text: string) => {
+    if (isPlaying) return;
+
+    setIsPlaying(true);
+    try {
+      const audioContent = await textToSpeech(text);
+      const audioBlob = new Blob([audioContent], { type: 'audio/mp3' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      
+      audio.onended = () => {
+        setIsPlaying(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      await audio.play();
+    } catch (error) {
+      console.error('音声の再生中にエラーが発生しました:', error);
+      toast({
+        title: 'エラー',
+        description: '音声の再生に失敗しました。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      setIsPlaying(false);
+    }
+  };
+
   return (
     <Box>
       <NavBar />
@@ -69,7 +108,11 @@ const EditArticlePage = ({ params }: { params: Params }) => {
           </FormControl>
           <FormControl mt={4}>
             <FormLabel>説明</FormLabel>
-            <Textarea value={article.description} onChange={(e) => setArticle({...article, description: e.target.value})} />
+            <Textarea 
+              value={article.description} 
+              onChange={(e) => setArticle({...article, description: e.target.value})}
+              className="w-full"
+            />
           </FormControl>
           <FormControl mt={4}>
             <FormLabel>URL</FormLabel>
@@ -79,7 +122,19 @@ const EditArticlePage = ({ params }: { params: Params }) => {
             <FormLabel>画像URL</FormLabel>
             <Input value={article.imageUrl} onChange={(e) => setArticle({...article, imageUrl: e.target.value})} />
           </FormControl>
-          <Button mt={4} colorScheme="blue" type="submit">更新</Button>
+          <Box display="flex" justifyContent="flex-start" mt={4} gap={2}>
+            <ReadAloudButton
+              onClick={() => handlePlay(article.description)}
+              isLoading={isPlaying}
+            />
+            <Button
+              type="submit"
+              colorScheme="blue"
+              leftIcon={<Icon as={FaSave} />}
+            >
+              更新
+            </Button>
+          </Box>
         </form>
       </Box>
     </Box>
