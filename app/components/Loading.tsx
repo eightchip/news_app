@@ -1,3 +1,4 @@
+// components/loading.tsx
 import { Box, Spinner, Text, Flex } from '@chakra-ui/react';
 
 const Loading = () => {

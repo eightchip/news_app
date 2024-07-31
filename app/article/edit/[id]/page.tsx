@@ -1,3 +1,4 @@
+// app/article/edit/[id]/page.tsx
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -19,18 +20,24 @@ const EditArticlePage = ({ params }: { params: Params }) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       router.push('/login'); // セッションがない場合はリダイレクト
-      return; // ここで処理を終了
+      return;
     }
-    
+
     const res = await fetch(`/api/articles/${params.id}`);
     if (res.ok) {
       const data = await res.json();
       setArticle(data);
     } else {
       console.error('記事の取得に失敗しました');
-      // エラーハンドリングを追加
+      toast({
+        title: 'エラー',
+        description: '記事の取得に失敗しました。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     }
-  }, [params.id, router, supabase]);
+  }, [params.id, router, supabase, toast]);
 
   useEffect(() => {
     fetchArticle();
@@ -48,7 +55,6 @@ const EditArticlePage = ({ params }: { params: Params }) => {
       router.push('/article/manage'); // 更新成功時のみリダイレクト
     } else {
       toast({ title: '更新に失敗しました', status: 'error' });
-      // エラーハンドリングを追加
     }
   };
 

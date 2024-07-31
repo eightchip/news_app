@@ -1,3 +1,4 @@
+// app/api/articles[id]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';

@@ -1,3 +1,4 @@
+// app/types/Article.ts
 export interface Article {
   id: string;
   title: string;

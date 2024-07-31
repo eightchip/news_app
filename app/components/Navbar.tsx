@@ -1,3 +1,4 @@
+// components/Navbar.tsx
 'use client'
 import NextLink from 'next/link';
 import { Flex, Button } from '@chakra-ui/react';

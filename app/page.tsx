@@ -1,8 +1,21 @@
+//app/page.tsx
 'use client';
 import NavBar from './components/Navbar';
 import { Box, Heading, Text } from '@chakra-ui/react';
+import { useAuth } from './contexts/AuthContext';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login'); // ユーザーが未認証の場合、ログインページにリダイレクト
+    }
+  }, [loading, user, router]);
+
   return (
     <Box>
       <NavBar />

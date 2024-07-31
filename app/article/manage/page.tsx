@@ -1,3 +1,4 @@
+// app/article/manage/page.tsx
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Select, Spinner, VStack } from '@chakra-ui/react';

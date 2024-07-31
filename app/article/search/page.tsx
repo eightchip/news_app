@@ -1,3 +1,4 @@
+// app/article/search/page.tsx
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -156,7 +157,7 @@ const ArticleSearch = () => {
 
       toast({
         title: '保存結果',
-        description: `${successfulSaves.length}件の記事が保存されました。${failedSaves.length}件の記事の保存に失敗しました。`,
+        description: `${successfulSaves.length}件の記事が保存されました。`,
         status: successfulSaves.length > 0 ? 'success' : 'warning',
         duration: 5000,
         isClosable: true,

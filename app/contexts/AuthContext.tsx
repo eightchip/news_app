@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (event === 'SIGNED_OUT') {
         router.push('/login');
       } else if (event === 'SIGNED_IN') {
-        router.push('/article/search');
+        router.push('/');
       }
     });
 
@@ -43,7 +43,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [supabase, router]);
 
   const signOut = async () => {
+    setLoading(true); // Added: Start loading when logging out
     await supabase.auth.signOut();
+    setUser(null);
     router.push('/login');
   };
 
