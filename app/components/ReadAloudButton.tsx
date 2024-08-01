@@ -1,3 +1,4 @@
+// app/components/ReadAloudButton.tsx
 import React from 'react';
 import { Button, Icon } from '@chakra-ui/react';
 import { FaVolumeUp } from 'react-icons/fa';

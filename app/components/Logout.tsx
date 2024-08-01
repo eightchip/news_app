@@ -1,7 +1,7 @@
 'use client';
 import { Button, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../lib/supabase';
+import supabase from '../lib/supabase';
 
 const LogoutButton = () => {
   const router = useRouter();

@@ -1,5 +1,7 @@
+// components/PlayButton.tsx
 import { useState } from 'react';
 import { textToSpeech } from '../lib/textToSpeech';
+import { FaVolumeUp } from 'react-icons/fa';
 
 export function PlayButton({ text }: { text: string }) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -9,19 +11,31 @@ export function PlayButton({ text }: { text: string }) {
 
     setIsPlaying(true);
     try {
-      const audioContent = await textToSpeech(text);
-      const audioBlob = new Blob([audioContent], { type: 'audio/mp3' });
+      const response = await fetch('/api/text-to-speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text, language: 'en-US' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('音声データの取得に失敗しました');
+      }
+
+      const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
+
       const audio = new Audio(audioUrl);
-      
+      audio.play();
+
       audio.onended = () => {
         setIsPlaying(false);
         URL.revokeObjectURL(audioUrl);
       };
-
-      await audio.play();
     } catch (error) {
       console.error('音声の再生中にエラーが発生しました:', error);
+    } finally {
       setIsPlaying(false);
     }
   };
@@ -30,9 +44,10 @@ export function PlayButton({ text }: { text: string }) {
     <button
       onClick={handlePlay}
       disabled={isPlaying}
-      className="px-4 py-2 rounded bg-teal-500 hover:bg-teal-600 text-white"
+      className="flex items-center px-3 py-1.5 rounded bg-white border-2 border-gray-400 text-gray-700 text-sm hover:bg-gray-100 hover:border-gray-500"
     >
-      読み上げ
+      <FaVolumeUp className="mr-2 text-gray-600" />
+      読み上げ (US)
     </button>
   );
 }

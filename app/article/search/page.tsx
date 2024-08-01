@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import supabase from '../../lib/supabase';
 import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex, Select, VStack, Spinner, Radio, RadioGroup } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
 import { Article } from '../../types/Article';
@@ -36,7 +36,6 @@ const ArticleSearch = () => {
   const [voiceLanguage, setVoiceLanguage] = useState<'en-US' | 'en-GB'>('en-US');
 
   const router = useRouter();
-  const supabase = createClientComponentClient();
   const toast = useToast();
   const articlesPerPage = 10;
 

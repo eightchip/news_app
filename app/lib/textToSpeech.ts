@@ -1,9 +1,10 @@
+// app/lib/textToSpeech
 'use server'
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 
 const keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
-export async function textToSpeech(text: string, language: 'en-US' | 'en-GB'): Promise<Uint8Array> {
+export async function textToSpeech(text: string, language: string = 'en-US'): Promise<Uint8Array> {
   const client = new TextToSpeechClient({ keyFilename });
   
   console.log('Synthesizing speech with language:', language); // Added for debugging

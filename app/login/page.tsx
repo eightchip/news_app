@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, Button, FormControl, FormLabel, Input, Heading, useToast, Flex, VStack, Text, Link } from '@chakra-ui/react';
 import NextLink from 'next/link';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import supabase from '../lib/supabase';
 import Loading from '../components/Loading';
 
 const Login = () => {
@@ -13,7 +13,6 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   const handleLogin = async () => {
     setIsLoading(true);

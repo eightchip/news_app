@@ -1,3 +1,4 @@
+// app/components/EditArticle.tsx
 'use client';
 
 import { useState } from 'react';

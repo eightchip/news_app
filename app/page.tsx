@@ -31,12 +31,12 @@ export default function Home() {
           <Text>・ GitHub（バージョン管理）</Text>
 
           <Heading size="md" mt={4}>仕様</Heading>
-          <Text>このアプリは、ユーザーが記事を検索、保存、編集できる機能を提供します。</Text>
+          <Text>このアプリは、ユーザーが英文記事を検索、保存、編集、音声再生ができる機能を提供します。</Text>
 
           <Heading size="md" mt={4}>アプリの機能</Heading>
-          <Text>・ 記事の検索</Text>
+          <Text>・ 英文記事の検索・音声読み上げ</Text>
           <Text>・ 保存した記事の管理</Text>
-          <Text>・ 記事の編集</Text>
+          <Text>・ 記事の編集・音声読み上げ</Text>
           <Text>・ ユーザー認証</Text>
 
           <Heading size="md" mt={4}>使用方法</Heading>
