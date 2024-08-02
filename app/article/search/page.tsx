@@ -61,7 +61,7 @@ const ArticleSearch = () => {
       }
     };
     checkAuth();
-  }, [supabase, router, toast]);
+  }, [router, toast]);
 
   const searchArticles = async () => {
     setIsSearching(true);
