@@ -2,41 +2,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../lib/prisma';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 
+export async function GET(req: NextRequest) {
+  const userId = req.nextUrl.searchParams.get('userId');
 
-export const GET = async (req: NextRequest) => {
-  const supabase = createRouteHandlerClient({ cookies });
-  
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+  }
+
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log('APIルート - セッション:', session);
-
-    const userId = session?.user?.id;
-    console.log('APIルート - ユーザーID:', userId);
-
-    if (!userId) {
-      return NextResponse.json({ error: '認証されていません' }, { status: 401 });
-    }
-
     const articles = await prisma.article.findMany({
       where: { userId: userId },
-      include: { wordLists: true },
-      orderBy: { publishedAt: 'desc' },
+      orderBy: { publishedAt: 'desc' }, // 正しいフィールド名に変更
     });
 
-    console.log('APIルート - 取得した記事数:', articles.length);
     return NextResponse.json(articles);
   } catch (error) {
-    console.error('APIルート - 記事取得エラー:', error);
-    return NextResponse.json({ error: 'サーバーエラー' }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+    console.error('記事取得エラー:', error);
+    return NextResponse.json({ error: '記事の取得に失敗しました' }, { status: 500 });
   }
-};
+}
 
 export const POST = async (req: NextRequest) => {
-  const supabase = createRouteHandlerClient({ cookies });
+  const supabase = createRouteHandlerClient({ cookies: () => req.cookies as any });
 
   try {
     // セッションの確認
