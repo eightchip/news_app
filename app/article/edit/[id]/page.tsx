@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, FormControl, FormLabel, Input, Textarea, useToast, Icon } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, Textarea, useToast, Icon, VStack } from '@chakra-ui/react';
 import { FaSave } from 'react-icons/fa';
 import NavBar from '../../../components/Navbar';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -115,33 +115,60 @@ const EditArticlePage = ({ params }: { params: Params }) => {
   return (
     <Box>
       <NavBar />
-      <Box maxWidth="800px" margin="auto" mt={5}>
+      <Box maxWidth="800px" margin="auto" mt={5} p={5} boxShadow="md" borderRadius="lg" bg="white">
         <form onSubmit={handleSubmit}>
-          <FormControl>
-            <FormLabel>タイトル</FormLabel>
-            <Input value={article.title} onChange={(e) => setArticle({...article, title: e.target.value})} />
-          </FormControl>
-          <FormControl mt={4}>
-            <FormLabel>説明</FormLabel>
-            <Textarea value={article.description} onChange={(e) => setArticle({...article, description: e.target.value})} />
-          </FormControl>
-          <FormControl mt={4}>
-            <FormLabel>単語リスト</FormLabel>
-            <Textarea value={wordList.words.join(', ')} readOnly />
-          </FormControl>
-          <FormControl mt={4}>
-            <FormLabel>単語を追加</FormLabel>
-            <Input value={newWords} onChange={(e) => setNewWords(e.target.value)} placeholder="カンマで区切って入力" />
-          </FormControl>
-          <Box display="flex" justifyContent="flex-start" mt={4} gap={2}>
-            <PlayButton text={article.description} />
-            <Button onClick={handleAddWords} colorScheme="green">
-              単語追加
-            </Button>
-            <Button type="submit" colorScheme="blue" leftIcon={<Icon as={FaSave} />}>
-              更新
-            </Button>
-          </Box>
+          <VStack spacing={6} align="stretch">
+            <FormControl>
+              <FormLabel color="teal.600" fontWeight="bold">タイトル</FormLabel>
+              <Input 
+                value={article.title} 
+                onChange={(e) => setArticle({...article, title: e.target.value})}
+                borderColor="gray.300"
+                _hover={{ borderColor: "gray.400" }}
+                _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px teal.500" }}
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel color="teal.600" fontWeight="bold">説明</FormLabel>
+              <Textarea 
+                value={article.description} 
+                onChange={(e) => setArticle({...article, description: e.target.value})}
+                borderColor="gray.300"
+                _hover={{ borderColor: "gray.400" }}
+                _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px teal.500" }}
+                minHeight="150px"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel color="teal.600" fontWeight="bold">単語リスト</FormLabel>
+              <Textarea 
+                value={wordList.words.join(', ')} 
+                readOnly 
+                bg="gray.50"
+                borderColor="gray.300"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel color="teal.600" fontWeight="bold">単語を追加</FormLabel>
+              <Input 
+                value={newWords} 
+                onChange={(e) => setNewWords(e.target.value)} 
+                placeholder="カンマで区切って入力"
+                borderColor="gray.300"
+                _hover={{ borderColor: "gray.400" }}
+                _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px teal.500" }}
+              />
+            </FormControl>
+            <Box display="flex" justifyContent="flex-start" mt={4} gap={2}>
+              <PlayButton text={article.description} />
+              <Button onClick={handleAddWords} colorScheme="green">
+                単語追加
+              </Button>
+              <Button type="submit" colorScheme="blue" leftIcon={<Icon as={FaSave} />}>
+                更新
+              </Button>
+            </Box>
+          </VStack>
         </form>
       </Box>
     </Box>

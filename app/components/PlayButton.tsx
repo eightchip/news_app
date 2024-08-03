@@ -1,21 +1,29 @@
 // components/PlayButton.tsx
-import { useState } from 'react';
-import { FaVolumeUp } from 'react-icons/fa';
+import React, { useState, useRef } from 'react';
+import { Button, Icon, Box, Select } from '@chakra-ui/react';
+import { FaVolumeUp, FaPause } from 'react-icons/fa';
 
-export function PlayButton({ text }: { text: string }) {
+interface PlayButtonProps {
+  text: string;
+}
+
+export const PlayButton: React.FC<PlayButtonProps> = ({ text }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [language, setLanguage] = useState<'en-US' | 'en-GB'>('en-US');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handlePlay = async () => {
     if (isPlaying) return;
 
-    setIsPlaying(true);
+    setIsLoading(true);
     try {
       const response = await fetch('/api/text-to-speech', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text, language: 'en-US' }),
+        body: JSON.stringify({ text, language }),
       });
 
       if (!response.ok) {
@@ -25,30 +33,66 @@ export function PlayButton({ text }: { text: string }) {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
 
-      const audio = new Audio(audioUrl);
-      
-      audio.onended = () => {
-        setIsPlaying(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      await audio.play();
+      if (audioRef.current) {
+        audioRef.current.src = audioUrl;
+        await audioRef.current.play();
+        setIsPlaying(true);
+      }
     } catch (error) {
       console.error('音声の再生中にエラーが発生しました:', error);
-      // ここでユーザーにエラーメッセージを表示することをお勧めします
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePause = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
       setIsPlaying(false);
     }
   };
 
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
+  };
+
   return (
-    <button
-      onClick={handlePlay}
-      disabled={isPlaying}
-      className="flex items-center px-3 py-1.5 rounded bg-white border-2 border-gray-400 text-gray-700 text-sm hover:bg-gray-100 hover:border-gray-500"
-    >
-      <FaVolumeUp className="mr-2 text-gray-600" />
-      {isPlaying ? '再生中...' : '読み上げ (US)'}
-    </button>
+    <Box display="flex" alignItems="center">
+      <Button
+        leftIcon={<Icon as={FaVolumeUp} />}
+        onClick={handlePlay}
+        isDisabled={isPlaying || isLoading}
+        variant="outline"
+        colorScheme="teal"
+        size="sm"
+        width="auto"
+      >
+        再生 ({language === 'en-US' ? 'US' : 'UK'})
+      </Button>
+      <Box ml={2}>
+        <Button
+          leftIcon={<Icon as={FaPause} />}
+          onClick={handlePause}
+          isDisabled={!isPlaying || isLoading}
+          variant="outline"
+          colorScheme="teal"
+          size="sm"
+          width="auto"
+        >
+          停止
+        </Button>
+      </Box>
+      <Box ml={2}>
+        <Select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as 'en-US' | 'en-GB')}
+          size="sm"
+        >
+          <option value="en-US">US</option>
+          <option value="en-GB">UK</option>
+        </Select>
+      </Box>
+      <audio ref={audioRef} onEnded={handleAudioEnded} />
+    </Box>
   );
-}
+};
