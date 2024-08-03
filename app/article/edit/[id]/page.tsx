@@ -19,8 +19,16 @@ interface Article {
   imageUrl: string;
 }
 
+interface WordList {
+  id: number;
+  words: string[];
+  articleId: number;
+}
+
 const EditArticlePage = ({ params }: { params: Params }) => {
   const [article, setArticle] = useState<Article>({ title: '', description: '', url: '', imageUrl: '' });
+  const [wordList, setWordList] = useState<WordList>({ id: 0, words: [], articleId: 0 });
+  const [newWords, setNewWords] = useState('');
   const router = useRouter();
   const toast = useToast();
   const supabase = createClientComponentClient();
@@ -28,7 +36,7 @@ const EditArticlePage = ({ params }: { params: Params }) => {
   const fetchArticle = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      router.push('/login'); // セッションがない場合はリダイレクト
+      router.push('/login');
       return;
     }
 
@@ -46,6 +54,14 @@ const EditArticlePage = ({ params }: { params: Params }) => {
         isClosable: true,
       });
     }
+
+    const wordListRes = await fetch(`/api/wordlists/${params.id}`);
+    if (wordListRes.ok) {
+      const wordListData = await wordListRes.json();
+      setWordList(wordListData);
+    } else {
+      console.error('単語リストの取得に失敗しました');
+    }
   }, [params.id, router, supabase, toast]);
 
   useEffect(() => {
@@ -61,9 +77,38 @@ const EditArticlePage = ({ params }: { params: Params }) => {
     });
     if (res.ok) {
       toast({ title: '記事を更新しました', status: 'success' });
-      router.push('/article/manage'); // 更新成功時のみリダイレクト
+      router.push('/article/manage');
     } else {
       toast({ title: '更新に失敗しました', status: 'error' });
+    }
+  };
+
+  const handleAddWords = async () => {
+    const wordsArray = newWords.split(',').map(word => word.trim());
+    if (wordsArray.some(word => word === '')) {
+      toast({
+        title: 'エラー',
+        description: '単語はカンマで区切って入力してください。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    const updatedWordList = { ...wordList, words: [...wordList.words, ...wordsArray] };
+    const res = await fetch(`/api/wordlists/${params.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedWordList),
+    });
+
+    if (res.ok) {
+      setWordList(updatedWordList);
+      setNewWords('');
+      toast({ title: '単語を追加しました', status: 'success' });
+    } else {
+      toast({ title: '単語の追加に失敗しました', status: 'error' });
     }
   };
 
@@ -81,15 +126,18 @@ const EditArticlePage = ({ params }: { params: Params }) => {
             <Textarea value={article.description} onChange={(e) => setArticle({...article, description: e.target.value})} />
           </FormControl>
           <FormControl mt={4}>
-            <FormLabel>URL</FormLabel>
-            <Input value={article.url} onChange={(e) => setArticle({...article, url: e.target.value})} />
+            <FormLabel>単語リスト</FormLabel>
+            <Textarea value={wordList.words.join(', ')} readOnly />
           </FormControl>
           <FormControl mt={4}>
-            <FormLabel>画像URL</FormLabel>
-            <Input value={article.imageUrl} onChange={(e) => setArticle({...article, imageUrl: e.target.value})} />
+            <FormLabel>単語を追加</FormLabel>
+            <Input value={newWords} onChange={(e) => setNewWords(e.target.value)} placeholder="カンマで区切って入力" />
           </FormControl>
           <Box display="flex" justifyContent="flex-start" mt={4} gap={2}>
             <PlayButton text={article.description} />
+            <Button onClick={handleAddWords} colorScheme="green">
+              単語追加
+            </Button>
             <Button type="submit" colorScheme="blue" leftIcon={<Icon as={FaSave} />}>
               更新
             </Button>

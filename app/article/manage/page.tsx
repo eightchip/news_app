@@ -87,26 +87,35 @@ const ArticleManage = () => {
   const handleDelete = async () => {
     if (selectedArticleId) {
       try {
+        // まず関連するWordListエントリを削除
+        const deleteWordListRes = await fetch(`/api/wordlists/${selectedArticleId}`, {
+          method: 'DELETE',
+        });
+        if (!deleteWordListRes.ok) {
+          throw new Error('関連するWordListエントリの削除に失敗しました');
+        }
+
+        // 次に記事を削除
         const res = await fetch(`/api/articles/${selectedArticleId}`, {
           method: 'DELETE',
         });
         if (res.ok) {
           toast({
-            title: 'Success',
-            description: 'Article deleted successfully',
+            title: '成功',
+            description: '記事が正常に削除されました',
             status: 'success',
             duration: 5000,
             isClosable: true,
           });
           fetchArticles();
         } else {
-          throw new Error('Failed to delete article');
+          throw new Error('記事の削除に失敗しました');
         }
       } catch (error) {
-        console.error('Error deleting article:', error);
+        console.error('記事削除エラー:', error);
         toast({
-          title: 'Error',
-          description: 'Failed to delete article',
+          title: 'エラー',
+          description: '記事の削除に失敗しました',
           status: 'error',
           duration: 5000,
           isClosable: true,
@@ -143,7 +152,7 @@ const ArticleManage = () => {
     <Box>
       <NavBar />
       <Box p={5} maxW="800px" mx="auto">
-        <Heading mb={5} textAlign="center">保存した記事を編集する</Heading>
+        <Heading mb={5} textAlign="center">Edit Articles</Heading>
         {articles.length === 0 ? (
           <Text>保存された記事はありません。</Text>
         ) : (

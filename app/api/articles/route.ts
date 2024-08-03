@@ -52,6 +52,14 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
+    // 空のWordListを作成して記事に紐づける
+    await prisma.wordList.create({
+      data: {
+        articleId: newArticle.id,
+        words: [],
+      },
+    });
+
     console.log('作成された記事:', newArticle);
 
     return NextResponse.json(newArticle);
