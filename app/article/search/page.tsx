@@ -351,7 +351,7 @@ const ArticleSearch = () => {
         <Box width="80%" mx="auto">
           <List spacing={3} textAlign="left">
             {paginatedArticles.map((article, index) => (
-              <ListItem key={index} borderWidth="1px" borderRadius="lg" overflow="hidden" p={4}>
+              <ListItem key={index} borderWidth="1px" borderRadius="lg" overflow="hidden" p={4} bg="orange.50">
                 <Flex alignItems="flex-start">
                   <Checkbox
                     isChecked={selectedArticles.includes(article)}
@@ -361,9 +361,9 @@ const ArticleSearch = () => {
                   />
                   <Box flex={1}>
                     <Link href={article.url} target="_blank" rel="noopener noreferrer">
-                      <Text as="span" color="blue.500" fontWeight="bold">{article.title}</Text>
+                      <Text as="span" color="orange.600" fontWeight="bold">{article.title}</Text>
                     </Link>
-                    <Text fontSize="sm" color="gray.500">
+                    <Text fontSize="sm" color="gray.600">
                       {typeof article.source === 'string' ? article.source : article.source.name} - {new Date(article.publishedAt).toLocaleString()}
                     </Text>
                     <Text fontSize="sm" mt={2}>{article.description}</Text>

@@ -115,56 +115,59 @@ const EditArticlePage = ({ params }: { params: Params }) => {
   return (
     <Box>
       <NavBar />
-      <Box maxWidth="800px" margin="auto" mt={5} p={5} boxShadow="md" borderRadius="lg" bg="white">
+      <Box maxWidth="800px" margin="auto" mt={5} p={5} boxShadow="md" borderRadius="lg" bg="orange.50">
         <form onSubmit={handleSubmit}>
           <VStack spacing={6} align="stretch">
             <FormControl>
-              <FormLabel color="teal.600" fontWeight="bold">タイトル</FormLabel>
+              <FormLabel color="orange.600" fontWeight="bold">タイトル</FormLabel>
               <Input 
                 value={article.title} 
                 onChange={(e) => setArticle({...article, title: e.target.value})}
                 borderColor="gray.300"
                 _hover={{ borderColor: "gray.400" }}
-                _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px teal.500" }}
+                _focus={{ borderColor: "orange.500", boxShadow: "0 0 0 1px orange.500" }}
+                bg="white"
               />
             </FormControl>
             <FormControl>
-              <FormLabel color="teal.600" fontWeight="bold">説明</FormLabel>
+              <FormLabel color="orange.600" fontWeight="bold">説明</FormLabel>
               <Textarea 
                 value={article.description} 
                 onChange={(e) => setArticle({...article, description: e.target.value})}
                 borderColor="gray.300"
                 _hover={{ borderColor: "gray.400" }}
-                _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px teal.500" }}
+                _focus={{ borderColor: "orange.500", boxShadow: "0 0 0 1px orange.500" }}
                 minHeight="150px"
+                bg="white"
               />
             </FormControl>
             <FormControl>
-              <FormLabel color="teal.600" fontWeight="bold">単語リスト</FormLabel>
+              <FormLabel color="orange.600" fontWeight="bold">表現リスト</FormLabel>
               <Textarea 
                 value={wordList.words.join(', ')} 
                 readOnly 
-                bg="gray.50"
                 borderColor="gray.300"
+                minHeight="100px"
               />
             </FormControl>
             <FormControl>
-              <FormLabel color="teal.600" fontWeight="bold">単語を追加</FormLabel>
+              <FormLabel color="orange.600" fontWeight="bold">新しい表現を追加</FormLabel>
               <Input 
                 value={newWords} 
                 onChange={(e) => setNewWords(e.target.value)} 
-                placeholder="カンマで区切って入力"
+                placeholder=",で区切る（例：make, your own dictionary）"
                 borderColor="gray.300"
                 _hover={{ borderColor: "gray.400" }}
-                _focus={{ borderColor: "teal.500", boxShadow: "0 0 0 1px teal.500" }}
+                _focus={{ borderColor: "orange.500", boxShadow: "0 0 0 1px orange.500" }}
+                bg="white"
               />
             </FormControl>
-            <Box display="flex" justifyContent="flex-start" mt={4} gap={2}>
+            <Box display="flex" flexWrap="wrap" justifyContent="flex-start" mt={4} gap={2}>
               <PlayButton text={article.description} />
-              <Button onClick={handleAddWords} colorScheme="green">
-                単語追加
+              <Button onClick={handleAddWords} colorScheme="green" fontSize={{ base: 'sm', md: 'md' }} px={4} py={2}>
+                表現追加
               </Button>
-              <Button type="submit" colorScheme="blue" leftIcon={<Icon as={FaSave} />}>
+              <Button type="submit" colorScheme="blue" leftIcon={<Icon as={FaSave} />} fontSize={{ base: 'sm', md: 'md' }} px={4} py={2}>
                 更新
               </Button>
             </Box>

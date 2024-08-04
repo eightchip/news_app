@@ -1,9 +1,9 @@
 'use client';
-import { Button, useToast } from '@chakra-ui/react';
+import { Button, ButtonProps, useToast } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import supabase from '../lib/supabase';
 
-const LogoutButton = () => {
+const LogoutButton: React.FC<ButtonProps> = (props) => {
   const router = useRouter();
   const toast = useToast();
 
@@ -33,11 +33,7 @@ const LogoutButton = () => {
     }
   };
 
-  return (
-    <Button variant="outline" onClick={handleLogout}>
-      ログアウト
-    </Button>
-  );
+  return <Button {...props} onClick={handleLogout}>ログアウト</Button>;
 };
 
 export default LogoutButton;

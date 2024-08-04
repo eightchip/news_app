@@ -1,7 +1,6 @@
-// app/article/manage/page.tsx
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Select, Spinner, VStack } from '@chakra-ui/react';
+import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Spinner, VStack } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Article } from '../../types/Article';
@@ -10,7 +9,6 @@ const ArticleManage = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'publishedAt' | 'source'>('publishedAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
@@ -57,37 +55,19 @@ const ArticleManage = () => {
     fetchArticles();
   }, [fetchArticles]);
 
-  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSortBy = event.target.value as 'publishedAt' | 'source';
-    setSortBy(newSortBy);
-    sortArticles(newSortBy, sortOrder);
-  };
-
   const handleSortOrderChange = () => {
-    const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-    setSortOrder(newOrder);
-    sortArticles(sortBy, newOrder);
+    setSortOrder(prevOrder => prevOrder === 'asc' ? 'desc' : 'asc');
   };
 
-  const sortArticles = (sortByField: 'source' | 'publishedAt', order: 'asc' | 'desc') => {
-    const sortedArticles = [...articles].sort((a, b) => {
-      if (sortByField === 'source') {
-        const sourceA = typeof a.source === 'string' ? a.source : a.source.name;
-        const sourceB = typeof b.source === 'string' ? b.source : b.source.name;
-        return order === 'asc' ? sourceA.localeCompare(sourceB) : sourceB.localeCompare(sourceA);
-      } else {
-        return order === 'asc' 
-          ? new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime() 
-          : new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
-      }
-    });
-    setArticles(sortedArticles);
-  };
+  const sortedArticles = [...articles].sort((a, b) => {
+    return sortOrder === 'asc' 
+      ? new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime() 
+      : new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+  });
 
   const handleDelete = async () => {
     if (selectedArticleId) {
       try {
-        // まず関連するWordListエントリを削除
         const deleteWordListRes = await fetch(`/api/wordlists/${selectedArticleId}`, {
           method: 'DELETE',
         });
@@ -95,7 +75,6 @@ const ArticleManage = () => {
           throw new Error('関連するWordListエントリの削除に失敗しました');
         }
 
-        // 次に記事を削除
         const res = await fetch(`/api/articles/${selectedArticleId}`, {
           method: 'DELETE',
         });
@@ -157,33 +136,28 @@ const ArticleManage = () => {
           <Text>保存された記事はありません。</Text>
         ) : (
           <>
-            <Flex justifyContent="center" mb={5}>
-              <Select value={sortBy} onChange={handleSortChange} mr={2}>
-                <option value="publishedAt">Published Date</option>
-                <option value="source">Source</option>
-              </Select>
+            <Flex justifyContent="flex-end" mb={5}>
               <Button onClick={handleSortOrderChange}>
-                {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                {sortOrder === 'asc' ? '古い順' : '新しい順'}
               </Button>
             </Flex>
             <List spacing={3}>
-              {articles.map((article) => (
-                <ListItem key={article.id} borderWidth="1px" p={3} borderRadius="md">
-                  <Flex alignItems="center">
-                    <Box>
-                      <Text fontWeight="bold">{article.title}</Text>
-                      <Text fontSize="sm">{article.source.name} - {new Date(article.publishedAt).toLocaleString()}</Text>
+              {sortedArticles.map((article) => (
+                <ListItem key={article.id} borderWidth="1px" p={3} borderRadius="md" bg="orange.50">
+                  <Flex alignItems="flex-start">
+                    <Box flex={1}>
+                      <Text fontWeight="bold" color="orange.600">{article.title}</Text>
+                      <Text fontSize="sm" color="gray.600">{article.source.name} - {new Date(article.publishedAt).toLocaleString()}</Text>
                       <Link href={article.url} color="blue.500" isExternal>
                         Read original
                       </Link>
                     </Box>
-                    <Spacer />
-                    <Flex>
-                      <Link href={`/article/edit/${article.id}`}>
-                        <Button as="a" size="sm" colorScheme="blue" mr={2}>Edit</Button>
+                    <VStack spacing={2} align="stretch">
+                      <Link href={`/article/edit/${article.id}`} style={{ width: '100%' }}>
+                        <Button as="a" size="sm" colorScheme="blue" width="100%">Edit</Button>
                       </Link>
-                      <Button size="sm" colorScheme="red" onClick={() => openDeleteDialog(article.id)}>Delete</Button>
-                    </Flex>
+                      <Button size="sm" colorScheme="red" width="100%" onClick={() => openDeleteDialog(article.id)}>Delete</Button>
+                    </VStack>
                   </Flex>
                 </ListItem>
               ))}
