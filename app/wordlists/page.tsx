@@ -46,13 +46,13 @@ const WordListsPage = () => {
     <Box>
       <NavBar />
       <Box maxWidth="800px" margin="auto" mt={5} p={5} boxShadow="md" borderRadius="lg" bg="orange.50">
-        <Heading mb={5} color="orange.600">表現集</Heading>
+        <Heading mb={5} color="orange.600" textAlign="center">Expressions</Heading>
         <VStack spacing={6} align="stretch">
           {wordLists.map((wordList) => (
             <Box key={wordList.id} p={4} borderWidth="1px" borderRadius="md" bg="white">
               <Heading size="md" mb={2} color="orange.500">{wordList.article.title}</Heading>
               <Text fontSize="sm" mb={2} color="gray.600">{wordList.article.description}</Text>
-              <Text fontWeight="bold" mb={2}>表現:</Text>
+              <Text fontWeight="bold" mb={2}>登録された表現:</Text>
               <Text mb={3}>{wordList.words.join(', ')}</Text>
               <PlayButton text={wordList.words.join(', ')} />
             </Box>

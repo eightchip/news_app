@@ -130,8 +130,8 @@ const ArticleManage = () => {
   return (
     <Box>
       <NavBar />
-      <Box p={5} maxW="800px" mx="auto">
-        <Heading mb={5} textAlign="center">Edit Articles</Heading>
+      <Box p={5} maxW="800px" mx="auto" boxShadow="md" borderRadius="lg" bg="orange.50">
+        <Heading mb={5} color="orange.600" textAlign="center">Edit Articles</Heading>
         {articles.length === 0 ? (
           <Text>保存された記事はありません。</Text>
         ) : (
@@ -143,7 +143,7 @@ const ArticleManage = () => {
             </Flex>
             <List spacing={3}>
               {sortedArticles.map((article) => (
-                <ListItem key={article.id} borderWidth="1px" p={3} borderRadius="md" bg="orange.50">
+                <ListItem key={article.id} borderWidth="1px" p={3} borderRadius="md" bg="white">
                   <Flex alignItems="flex-start">
                     <Box flex={1}>
                       <Text fontWeight="bold" color="orange.600">{article.title}</Text>

@@ -280,8 +280,8 @@ const ArticleSearch = () => {
   return (
     <Box>
       <NavBar />
-      <Box p={5} textAlign="center">
-        <Heading mb={5}>Search Articles</Heading>
+      <Box maxWidth="800px" margin="auto" mt={5} p={5} boxShadow="md" borderRadius="lg" bg="orange.50">
+        <Heading mb={5} color="orange.600" textAlign="center">Search Articles</Heading>
         <Input
           type="text"
           value={query}
@@ -351,7 +351,7 @@ const ArticleSearch = () => {
         <Box width="80%" mx="auto">
           <List spacing={3} textAlign="left">
             {paginatedArticles.map((article, index) => (
-              <ListItem key={index} borderWidth="1px" borderRadius="lg" overflow="hidden" p={4} bg="orange.50">
+              <ListItem key={index} borderWidth="1px" borderRadius="lg" overflow="hidden" p={4} bg="white">
                 <Flex alignItems="flex-start">
                   <Checkbox
                     isChecked={selectedArticles.includes(article)}
@@ -400,21 +400,22 @@ const ArticleSearch = () => {
             Next
           </Button>
         </Flex>
-        <Button 
-          onClick={saveSelectedArticles} 
-          mt={5} 
-          colorScheme="green" 
-          isDisabled={isSaving || selectedArticles.length === 0}
-        >
-          {isSaving ? (
-            <>
-              <Spinner size="sm" mr={2} />
+        <Flex justifyContent="center" mt={5}>
+          <Button 
+            onClick={saveSelectedArticles} 
+            colorScheme="green" 
+            isDisabled={isSaving || selectedArticles.length === 0}
+          >
+            {isSaving ? (
+              <>
+                <Spinner size="sm" mr={2} />
               記事を保存しています...
-            </>
-          ) : (
-            'Save Selected Articles'
-          )}
-        </Button>
+              </>
+            ) : (
+              'Save Selected Articles'
+            )}
+          </Button>
+        </Flex>
       </Box>
       <audio ref={audioRef} onEnded={() => setIsPlaying(false)} />
     </Box>
