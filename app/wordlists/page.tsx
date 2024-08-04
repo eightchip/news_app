@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Box, VStack, Heading, Text, Button, useToast } from '@chakra-ui/react';
 import NavBar from '../components/Navbar';
 import { PlayButton } from '../components/PlayButton';
@@ -18,15 +18,11 @@ const WordListsPage = () => {
   const [wordLists, setWordLists] = useState<WordList[]>([]);
   const toast = useToast();
 
-  useEffect(() => {
-    fetchWordLists();
-  }, []);
-
-  const fetchWordLists = async () => {
+  const fetchWordLists = useCallback(async () => {
     try {
       const response = await fetch('/api/wordlists');
       if (!response.ok) {
-        throw new Error('Failed to fetch word lists');
+        throw new Error('単語リストの取得に失敗しました');
       }
       const data = await response.json();
       setWordLists(data.filter((wordList: WordList) => wordList.words && wordList.words.length > 0));
@@ -40,7 +36,11 @@ const WordListsPage = () => {
         isClosable: true,
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchWordLists();
+  }, [fetchWordLists]);
 
   return (
     <Box>
@@ -52,7 +52,7 @@ const WordListsPage = () => {
             <Box key={wordList.id} p={4} borderWidth="1px" borderRadius="md" bg="white">
               <Heading size="md" mb={2} color="orange.500">{wordList.article.title}</Heading>
               <Text fontSize="sm" mb={2} color="gray.600">{wordList.article.description}</Text>
-              <Text fontWeight="bold" mb={2}>単語・表現:</Text>
+              <Text fontWeight="bold" mb={2}>表現:</Text>
               <Text mb={3}>{wordList.words.join(', ')}</Text>
               <PlayButton text={wordList.words.join(', ')} />
             </Box>
