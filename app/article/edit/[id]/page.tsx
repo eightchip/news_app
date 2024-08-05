@@ -28,7 +28,7 @@ interface WordList {
 const EditArticlePage = ({ params }: { params: Params }) => {
   const [article, setArticle] = useState<Article>({ title: '', description: '', url: '', imageUrl: '' });
   const [wordList, setWordList] = useState<WordList>({ id: 0, words: [], articleId: 0 });
-  const [newWords, setNewWords] = useState('');
+  const [editingWords, setEditingWords] = useState('');
   const router = useRouter();
   const toast = useToast();
   const supabase = createClientComponentClient();
@@ -68,47 +68,35 @@ const EditArticlePage = ({ params }: { params: Params }) => {
     fetchArticle();
   }, [fetchArticle]);
 
+  useEffect(() => {
+    if (wordList.words) {
+      setEditingWords(wordList.words.join(', '));
+    }
+  }, [wordList]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch(`/api/articles/${params.id}`, {
+    const wordsArray = editingWords.split(',').map(word => word.trim()).filter(word => word !== '');
+    const updatedWordList = { ...wordList, words: wordsArray };
+
+    const articleRes = await fetch(`/api/articles/${params.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(article),
     });
-    if (res.ok) {
-      toast({ title: '記事を更新しました', status: 'success' });
-      router.push('/article/manage');
-    } else {
-      toast({ title: '更新に失敗しました', status: 'error' });
-    }
-  };
 
-  const handleAddWords = async () => {
-    const wordsArray = newWords.split(',').map(word => word.trim());
-    if (wordsArray.some(word => word === '')) {
-      toast({
-        title: 'エラー',
-        description: '単語はカンマで区切って入力してください。',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-      return;
-    }
-
-    const updatedWordList = { ...wordList, words: [...wordList.words, ...wordsArray] };
-    const res = await fetch(`/api/wordlists/${params.id}`, {
+    const wordListRes = await fetch(`/api/wordlists/${params.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedWordList),
     });
 
-    if (res.ok) {
+    if (articleRes.ok && wordListRes.ok) {
       setWordList(updatedWordList);
-      setNewWords('');
-      toast({ title: '単語を追加しました', status: 'success' });
+      toast({ title: '記事と表現リストを更新しました', status: 'success' });
+      router.push('/article/manage');
     } else {
-      toast({ title: '単語の追加に失敗しました', status: 'error' });
+      toast({ title: '更新に失敗しました', status: 'error' });
     }
   };
 
@@ -144,29 +132,18 @@ const EditArticlePage = ({ params }: { params: Params }) => {
             <FormControl>
               <FormLabel color="orange.600" fontWeight="bold">表現リスト</FormLabel>
               <Textarea 
-                value={wordList.words.join(', ')} 
-                readOnly 
-                borderColor="gray.300"
-                minHeight="100px"
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel color="orange.600" fontWeight="bold">新しい表現を追加</FormLabel>
-              <Input 
-                value={newWords} 
-                onChange={(e) => setNewWords(e.target.value)} 
-                placeholder=",で区切る（例：make, your own dictionary）"
+                value={editingWords} 
+                onChange={(e) => setEditingWords(e.target.value)}
                 borderColor="gray.300"
                 _hover={{ borderColor: "gray.400" }}
                 _focus={{ borderColor: "orange.500", boxShadow: "0 0 0 1px orange.500" }}
+                minHeight="150px"
                 bg="white"
+                placeholder="気になる単語や表現を入力して下さい。"
               />
             </FormControl>
             <Box display="flex" flexWrap="wrap" justifyContent="flex-start" mt={4} gap={2}>
-              <PlayButton text={article.description} />
-              <Button onClick={handleAddWords} colorScheme="green" fontSize={{ base: 'sm', md: 'md' }} px={4} py={2}>
-                表現追加
-              </Button>
+              <PlayButton text={editingWords} />
               <Button type="submit" colorScheme="blue" leftIcon={<Icon as={FaSave} />} fontSize={{ base: 'sm', md: 'md' }} px={4} py={2}>
                 更新
               </Button>

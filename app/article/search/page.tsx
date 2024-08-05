@@ -282,15 +282,16 @@ const ArticleSearch = () => {
       <NavBar />
       <Box maxWidth="800px" margin="auto" mt={5} p={5} boxShadow="md" borderRadius="lg" bg="orange.50">
         <Heading mb={5} color="orange.600" textAlign="center">Search Articles</Heading>
-        <Input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="type keyword in English"
-          mb={5}
-          mx="auto"
-          width="50%"
-        />
+        <Flex justifyContent="center" mb={5}>
+          <Input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="type keyword in English"
+            width="50%"
+            textAlign="center"
+          />
+        </Flex>
         <VStack spacing={4} align="stretch" mb={5}>
           <Flex justifyContent="center" flexWrap="wrap">
             <Checkbox
