@@ -118,7 +118,7 @@ const EditArticlePage = ({ params }: { params: Params }) => {
               />
             </FormControl>
             <FormControl>
-              <FormLabel color="orange.600" fontWeight="bold">説明</FormLabel>
+              <FormLabel color="orange.600" fontWeight="bold">本文</FormLabel>
               <Textarea 
                 value={article.description} 
                 onChange={(e) => setArticle({...article, description: e.target.value})}
@@ -128,6 +128,9 @@ const EditArticlePage = ({ params }: { params: Params }) => {
                 minHeight="150px"
                 bg="white"
               />
+              <Box mt={2}>
+                <PlayButton text={article.description} />
+              </Box>
             </FormControl>
             <FormControl>
               <FormLabel color="orange.600" fontWeight="bold">表現リスト</FormLabel>
@@ -143,7 +146,6 @@ const EditArticlePage = ({ params }: { params: Params }) => {
               />
             </FormControl>
             <Box display="flex" flexWrap="wrap" justifyContent="flex-start" mt={4} gap={2}>
-              <PlayButton text={editingWords} />
               <Button type="submit" colorScheme="blue" leftIcon={<Icon as={FaSave} />} fontSize={{ base: 'sm', md: 'md' }} px={4} py={2}>
                 更新
               </Button>

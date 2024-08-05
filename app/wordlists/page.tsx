@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react';
-import { Box, VStack, Heading, Text, Button, useToast } from '@chakra-ui/react';
+import { Box, VStack, Heading, Text, useToast, Flex } from '@chakra-ui/react';
 import NavBar from '../components/Navbar';
 import { PlayButton } from '../components/PlayButton';
 
@@ -52,7 +52,10 @@ const WordListsPage = () => {
             <Box key={wordList.id} p={4} borderWidth="1px" borderRadius="md" bg="white">
               <Heading size="md" mb={2} color="orange.500">{wordList.article.title}</Heading>
               <Text fontSize="sm" mb={2} color="gray.600">{wordList.article.description}</Text>
-              <Text fontWeight="bold" mb={2}>登録された表現:</Text>
+              <Flex mb={2}>
+                <PlayButton text={wordList.article.description} />
+              </Flex>
+              <Text fontWeight="bold" mb={2}>登録した表現:</Text>
               <Text mb={3}>{wordList.words.join(', ')}</Text>
               <PlayButton text={wordList.words.join(', ')} />
             </Box>

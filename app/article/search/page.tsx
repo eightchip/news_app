@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '../../lib/supabase';
-import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex, Select, VStack, Spinner, Radio, RadioGroup } from '@chakra-ui/react';
+import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex, Select, VStack, Spinner } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
 import { Article } from '../../types/Article';
 import Link from 'next/link';
-import { ReadAloudButton } from '../../components/ReadAloudButton';
+import { PlayButton } from '../../components/PlayButton';
 
 const englishSources = [
   { id: 'bbc-news', name: 'BBC News' },
@@ -31,9 +31,6 @@ const ArticleSearch = () => {
   const [allArticlesSelected, setAllArticlesSelected] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [voiceLanguage, setVoiceLanguage] = useState<'en-US' | 'en-GB'>('en-US');
 
   const router = useRouter();
   const toast = useToast();
@@ -62,31 +59,6 @@ const ArticleSearch = () => {
     };
     checkAuth();
   }, [router, toast]);
-
-  useEffect(() => {
-    const handleAudioEnded = () => {
-      console.log('Audio ended');
-      setIsPlaying(false);
-    };
-
-    const handleAudioPause = () => {
-      console.log('Audio paused');
-      setIsPlaying(false);
-    };
-
-    const audioElement = audioRef.current;
-    if (audioElement) {
-      audioElement.addEventListener('ended', handleAudioEnded);
-      audioElement.addEventListener('pause', handleAudioPause);
-    }
-
-    return () => {
-      if (audioElement) {
-        audioElement.removeEventListener('ended', handleAudioEnded);
-        audioElement.removeEventListener('pause', handleAudioPause);
-      }
-    };
-  }, []);
 
   const searchArticles = async () => {
     setIsSearching(true);
@@ -227,54 +199,20 @@ const ArticleSearch = () => {
     setAllArticlesSelected(!allArticlesSelected);
   };
 
-  const playDescription = async (description: string) => {
-    console.log('playDescription called');
-    try {
-      const response = await fetch('/api/text-to-speech', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: description, language: voiceLanguage }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to synthesize speech');
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      if (audioRef.current) {
-        audioRef.current.src = audioUrl;
-        await audioRef.current.play();
-        setIsPlaying(true);
-        console.log('Audio playing');
-      }
-    } catch (error) {
-      console.error('Error playing description:', error);
-      toast({
-        title: 'エラー',
-        description: '音声の再生に失敗しました。',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-      setIsPlaying(false); // エラー時に再生状態をリセット
-    }
-  };
-
-  const pauseDescription = () => {
-    console.log('pauseDescription called');
-    if (audioRef.current && !audioRef.current.paused) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-      console.log('Audio paused');
-    }
-  };
-
   const paginatedArticles = articles ? articles.slice((page - 1) * articlesPerPage, page * articlesPerPage) : [];
 
   if (isLoading) {
-    return <Box>Loading...</Box>;
+    return (
+      <Box height="100vh" display="flex" justifyContent="center" alignItems="center">
+        <Spinner
+          thickness="4px"
+          speed="0.65s"
+          emptyColor="gray.200"
+          color="blue.500"
+          size="xl"
+        />
+      </Box>
+    );
   }
 
   return (
@@ -334,12 +272,6 @@ const ArticleSearch = () => {
             )}
           </Button>
         </Flex>
-        <RadioGroup onChange={(value) => setVoiceLanguage(value as 'en-US' | 'en-GB')} value={voiceLanguage} mb={5}>
-          <Flex justifyContent="center">
-            <Radio value="en-US" mr={4}>American English</Radio>
-            <Radio value="en-GB">British English</Radio>
-          </Flex>
-        </RadioGroup>
         <Flex justifyContent="center" mb={3}>
           <Checkbox
             isChecked={allArticlesSelected}
@@ -351,36 +283,33 @@ const ArticleSearch = () => {
         </Flex>
         <Box width="80%" mx="auto">
           <List spacing={3} textAlign="left">
-            {paginatedArticles.map((article, index) => (
-              <ListItem key={index} borderWidth="1px" borderRadius="lg" overflow="hidden" p={4} bg="white">
-                <Flex alignItems="flex-start">
-                  <Checkbox
-                    isChecked={selectedArticles.includes(article)}
-                    onChange={() => handleCheckboxChange(index)}
-                    mr={2}
-                    mt={1}
-                  />
-                  <Box flex={1}>
-                    <Link href={article.url} target="_blank" rel="noopener noreferrer">
-                      <Text as="span" color="orange.600" fontWeight="bold">{article.title}</Text>
-                    </Link>
-                    <Text fontSize="sm" color="gray.600">
-                      {typeof article.source === 'string' ? article.source : article.source.name} - {new Date(article.publishedAt).toLocaleString()}
-                    </Text>
-                    <Text fontSize="sm" mt={2}>{article.description}</Text>
-                    <Box mt={2}>
-                      <ReadAloudButton
-                        onPlay={() => playDescription(article.description)}
-                        onPause={pauseDescription}
-                        isPlaying={isPlaying}
-                        isLoading={false}
-                        language={voiceLanguage}
-                      />
+            {paginatedArticles.map((article, index) => {
+              const articleId = article.url; // URLを一意のIDとして使用
+              return (
+                <ListItem key={index} borderWidth="1px" borderRadius="lg" overflow="hidden" p={4} bg="white">
+                  <Flex alignItems="flex-start">
+                    <Checkbox
+                      isChecked={selectedArticles.includes(article)}
+                      onChange={() => handleCheckboxChange(index)}
+                      mr={2}
+                      mt={1}
+                    />
+                    <Box flex={1}>
+                      <Link href={article.url} target="_blank" rel="noopener noreferrer">
+                        <Text as="span" color="orange.600" fontWeight="bold">{article.title}</Text>
+                      </Link>
+                      <Text fontSize="sm" color="gray.600">
+                        {typeof article.source === 'string' ? article.source : article.source.name} - {new Date(article.publishedAt).toLocaleString()}
+                      </Text>
+                      <Text fontSize="sm" mt={2}>{article.description}</Text>
+                      <Box mt={2}>
+                        <PlayButton text={article.description} />
+                      </Box>
                     </Box>
-                  </Box>
-                </Flex>
-              </ListItem>
-            ))}
+                  </Flex>
+                </ListItem>
+              );
+            })}
           </List>
         </Box>
         <Flex mt={5} justifyContent="center">
@@ -418,7 +347,6 @@ const ArticleSearch = () => {
           </Button>
         </Flex>
       </Box>
-      <audio ref={audioRef} onEnded={() => setIsPlaying(false)} />
     </Box>
   );
 };
