@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Spinner, VStack } from '@chakra-ui/react';
+import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Spinner, VStack, Checkbox, HStack } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Article } from '../../types/Article';
+import { useRouter } from 'next/navigation';
 
 const ArticleManage = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -15,6 +16,7 @@ const ArticleManage = () => {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const toast = useToast();
   const supabase = createClientComponentClient();
+  const router = useRouter();
 
   const fetchArticles = useCallback(async () => {
     setIsLoading(true);
@@ -130,8 +132,8 @@ const ArticleManage = () => {
   return (
     <Box>
       <NavBar />
-      <Box p={5} maxW="800px" mx="auto" boxShadow="md" borderRadius="lg" bg="orange.50">
-        <Heading mb={5} color="orange.600" textAlign="center">Edit Articles</Heading>
+      <Box maxW="800px" mx="auto" mt={2} px={[1, 2]} bg="orange.50">
+        <Heading mb={2} color="orange.600" textAlign="center" fontSize={["xl", "2xl"]}>Edit Articles</Heading>
         {articles.length === 0 ? (
           <Text>保存された記事はありません。</Text>
         ) : (
@@ -141,19 +143,19 @@ const ArticleManage = () => {
                 {sortOrder === 'asc' ? '古い順' : '新しい順'}
               </Button>
             </Flex>
-            <List spacing={3}>
+            <List spacing={2}>
               {sortedArticles.map((article) => (
-                <ListItem key={article.id} borderWidth="1px" p={3} borderRadius="md" bg="white">
+                <ListItem key={article.id} borderWidth="1px" p={[1, 2]} borderRadius="sm" bg="white">
                   <Flex alignItems="flex-start">
                     <Box flex={1}>
-                      <Text fontWeight="bold" color="orange.600">{article.title}</Text>
-                      <Text fontSize="sm" color="gray.600">{article.source.name} - {new Date(article.publishedAt).toLocaleString()}</Text>
-                      <Link href={article.url} color="blue.500" isExternal>
+                      <Text fontWeight="bold" color="orange.600" fontSize={["sm", "md"]}>{article.title}</Text>
+                      <Text fontSize={["xs", "sm"]} color="gray.600">{article.source.name} - {new Date(article.publishedAt).toLocaleString()}</Text>
+                      <Link href={article.url} color="blue.500" fontSize={["xs", "sm"]} isExternal>
                         Read original
                       </Link>
                     </Box>
                     <VStack spacing={2} align="stretch">
-                      <Link href={`/article/edit/${article.id}`} style={{ width: '100%' }}>
+                      <Link href={`/article/edit/${article.id}`}>
                         <Button as="a" size="sm" colorScheme="blue" width="100%">Edit</Button>
                       </Link>
                       <Button size="sm" colorScheme="red" width="100%" onClick={() => openDeleteDialog(article.id)}>Delete</Button>

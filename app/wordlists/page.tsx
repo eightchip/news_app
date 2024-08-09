@@ -45,19 +45,21 @@ const WordListsPage = () => {
   return (
     <Box>
       <NavBar />
-      <Box maxWidth="800px" margin="auto" mt={5} p={5} boxShadow="md" borderRadius="lg" bg="orange.50">
-        <Heading mb={5} color="orange.600" textAlign="center">Expressions</Heading>
-        <VStack spacing={6} align="stretch">
+      <Box maxWidth="800px" margin="auto" mt={3} px={[2, 3, 4]} boxShadow="sm" borderRadius="md" bg="orange.50">
+        <Heading mb={2} color="orange.600" textAlign="center" fontSize={["xl", "2xl"]}>Expressions</Heading>
+        <VStack spacing={2} align="stretch">
           {wordLists.map((wordList) => (
-            <Box key={wordList.id} p={4} borderWidth="1px" borderRadius="md" bg="white">
-              <Heading size="md" mb={2} color="orange.500">{wordList.article.title}</Heading>
-              <Text fontSize="sm" mb={2} color="gray.600">{wordList.article.description}</Text>
-              <Flex mb={2}>
+            <Box key={wordList.id} p={3} borderWidth="1px" borderRadius="sm" bg="white">
+              <Heading size="md" mb={1} color="orange.500" fontSize="lg">{wordList.article.title}</Heading>
+              <Text fontSize="sm" mb={1} color="gray.600">{wordList.article.description}</Text>
+              <Box mb={2}>
                 <PlayButton text={wordList.article.description} />
-              </Flex>
-              <Text fontWeight="bold" mb={2}>登録した表現:</Text>
-              <Text mb={3}>{wordList.words.join(', ')}</Text>
-              <PlayButton text={wordList.words.join(', ')} />
+              </Box>
+              <Text fontWeight="bold" mb={1} fontSize="sm">登録した表現:</Text>
+              <Text mb={1} fontSize="sm">{wordList.words.join(', ')}</Text>
+              <Box>
+                <PlayButton text={wordList.words.join(', ')} />
+              </Box>
             </Box>
           ))}
         </VStack>

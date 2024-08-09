@@ -1,9 +1,9 @@
 // app/article/search/page.tsx
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '../../lib/supabase';
-import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex, Select, VStack, Spinner } from '@chakra-ui/react';
+import { Box, Button, Checkbox, Heading, Input, List, ListItem, Text, useToast, Flex, Select, VStack, Spinner, Wrap, WrapItem, useMediaQuery } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
 import { Article } from '../../types/Article';
 import Link from 'next/link';
@@ -35,6 +35,8 @@ const ArticleSearch = () => {
   const router = useRouter();
   const toast = useToast();
   const articlesPerPage = 10;
+
+  const [isMobile] = useMediaQuery("(max-width: 480px)");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -218,8 +220,8 @@ const ArticleSearch = () => {
   return (
     <Box>
       <NavBar />
-      <Box maxWidth="800px" margin="auto" mt={5} p={5} boxShadow="md" borderRadius="lg" bg="orange.50">
-        <Heading mb={5} color="orange.600" textAlign="center">Search Articles</Heading>
+      <Box maxWidth="800px" margin="auto" mt={1} px={[1, 2]} boxShadow="sm" borderRadius="md" bg="orange.50">
+        <Heading mb={2} color="orange.600" textAlign="center" fontSize={["xl", "2xl"]}>Search Articles</Heading>
         <Flex justifyContent="center" mb={5}>
           <Input
             type="text"
@@ -230,28 +232,29 @@ const ArticleSearch = () => {
             textAlign="center"
           />
         </Flex>
-        <VStack spacing={4} align="stretch" mb={5}>
-          <Flex justifyContent="center" flexWrap="wrap">
+        <VStack spacing={2} align="stretch" mb={5}>
+          <Flex justifyContent="center" mb={2}>
             <Checkbox
               isChecked={allSourcesSelected}
               onChange={handleAllSourcesToggle}
-              mr={4}
             >
               check all sources
             </Checkbox>
           </Flex>
-          <Flex justifyContent="center" flexWrap="wrap">
+          <Wrap spacing={4} justify="flex-start" pl={4} direction={isMobile ? "column" : "row"}>
             {englishSources.map(source => (
-              <Checkbox
-                key={source.id}
-                isChecked={selectedSources.includes(source.id)}
-                onChange={() => handleSourceChange(source.id)}
-                mr={4}
-              >
-                {source.name}
-              </Checkbox>
+              <WrapItem key={source.id} width={isMobile ? "100%" : "auto"}>
+                <Checkbox
+                  isChecked={selectedSources.includes(source.id)}
+                  onChange={() => handleSourceChange(source.id)}
+                  colorScheme="orange"
+                  width={isMobile ? "100%" : "auto"}
+                >
+                  {source.name}
+                </Checkbox>
+              </WrapItem>
             ))}
-          </Flex>
+          </Wrap>
         </VStack>
         <Flex justifyContent="center" mb={5}>
           <Select value={sortBy} onChange={handleSortChange} mr={2} width="auto">
@@ -281,12 +284,12 @@ const ArticleSearch = () => {
             check all articles
           </Checkbox>
         </Flex>
-        <Box width="80%" mx="auto">
-          <List spacing={3} textAlign="left">
+        <Box width="90%" mx="auto">
+          <List spacing={2} textAlign="left">
             {paginatedArticles.map((article, index) => {
               const articleId = article.url; // URLを一意のIDとして使用
               return (
-                <ListItem key={index} borderWidth="1px" borderRadius="lg" overflow="hidden" p={4} bg="white">
+                <ListItem key={index} borderWidth="1px" p={[1, 2]} borderRadius="sm" bg="white">
                   <Flex alignItems="flex-start">
                     <Checkbox
                       isChecked={selectedArticles.includes(article)}
@@ -296,12 +299,12 @@ const ArticleSearch = () => {
                     />
                     <Box flex={1}>
                       <Link href={article.url} target="_blank" rel="noopener noreferrer">
-                        <Text as="span" color="orange.600" fontWeight="bold">{article.title}</Text>
+                        <Text as="span" color="orange.600" fontWeight="bold" fontSize={["sm", "md"]}>{article.title}</Text>
                       </Link>
-                      <Text fontSize="sm" color="gray.600">
+                      <Text fontSize={["xs", "sm"]} color="gray.600">
                         {typeof article.source === 'string' ? article.source : article.source.name} - {new Date(article.publishedAt).toLocaleString()}
                       </Text>
-                      <Text fontSize="sm" mt={2}>{article.description}</Text>
+                      <Text fontSize={["xs", "sm"]} mt={2}>{article.description}</Text>
                       <Box mt={2}>
                         <PlayButton text={article.description} />
                       </Box>

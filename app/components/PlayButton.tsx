@@ -10,7 +10,7 @@ interface PlayButtonProps {
 export const PlayButton: React.FC<PlayButtonProps> = ({ text }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState<'en-US' | 'en-GB'>('en-US');
+  const [language, setLanguage] = useState<'en-US' | 'en-GB' | 'ja-JP'>('en-US');
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handlePlay = async () => {
@@ -67,7 +67,7 @@ export const PlayButton: React.FC<PlayButtonProps> = ({ text }) => {
         size="sm"
         width="auto"
       >
-        再生 ({language === 'en-US' ? 'US' : 'UK'})
+        再生
       </Button>
       <Box ml={2}>
         <Button
@@ -85,11 +85,12 @@ export const PlayButton: React.FC<PlayButtonProps> = ({ text }) => {
       <Box ml={2}>
         <Select
           value={language}
-          onChange={(e) => setLanguage(e.target.value as 'en-US' | 'en-GB')}
+          onChange={(e) => setLanguage(e.target.value as 'en-US' | 'en-GB' | 'ja-JP')}
           size="sm"
         >
           <option value="en-US">US</option>
           <option value="en-GB">UK</option>
+          <option value="ja-JP">JP</option>
         </Select>
       </Box>
       <audio ref={audioRef} onEnded={handleAudioEnded} />

@@ -21,7 +21,7 @@ export default function Home() {
       <Box p={5} maxW="800px" mx="auto" boxShadow="md" borderRadius="lg" bg="orange.50">
         <Heading as="h1" size="xl" textAlign="center" mb={6} color="orange.600">Read Me</Heading>
         
-        <Heading as="h2" size="lg" textAlign="center" mb={6} color="orange.500">アプリ名:EchoLingo（エコーリンゴ）</Heading>
+        <Heading as="h2" size="lg" textAlign="center" mb={6} color="orange.500">EchoLingo</Heading>
         
         <Box mt={5}>
           <Heading as="h2" size="lg" mb={4}>使用方法</Heading>
