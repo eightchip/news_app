@@ -1,11 +1,11 @@
 'use client';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button, Select, Box, Icon, useToast } from '@chakra-ui/react';
 import { FaMicrophone, FaStop } from 'react-icons/fa';
 
 interface SpeechToTextButtonProps {
   onTranscriptionComplete: (text: string) => void;
-  onTranscriptionStart: () => void; // 新しいプロップを追加
+  onTranscriptionStart: () => void;
 }
 
 export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ 
@@ -14,9 +14,23 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [language, setLanguage] = useState('en-US');
+  const [isSupported, setIsSupported] = useState(true);
   const toast = useToast();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+      setIsSupported(false);
+      toast({
+        title: '警告',
+        description: 'このブラウザは録音をサポートしていません。',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  }, [toast]);
 
   const startRecording = async () => {
     try {
@@ -27,39 +41,45 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
       const audioChunks: Blob[] = [];
 
       mediaRecorder.addEventListener('dataavailable', (event) => {
-        console.log('Data available:', event.data);
         audioChunks.push(event.data);
       });
 
       mediaRecorder.addEventListener('stop', async () => {
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        console.log('Audio Blob type:', audioBlob.type);
-        console.log('Audio Blob size:', audioBlob.size);
 
-        // 音声データを再生
         if (audioRef.current) {
           audioRef.current.src = URL.createObjectURL(audioBlob);
-          audioRef.current.play();
         }
 
         const formData = new FormData();
         formData.append('audio', audioBlob);
         formData.append('language', language);
 
-        const response = await fetch('/api/speech-to-text', {
-          method: 'POST',
-          body: formData,
-        });
+        try {
+          const response = await fetch('/api/speech-to-text', {
+            method: 'POST',
+            body: formData,
+          });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`音声認識に失敗しました: ${errorData.details}`);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`音声認識に失敗しました: ${errorData.details}`);
+          }
+
+          const { text } = await response.json();
+          onTranscriptionComplete(text);
+        } catch (error) {
+          console.error('音声認識エラー:', error);
+          toast({
+            title: 'エラー',
+            description: '音声認識に失敗しました。',
+            status: 'error',
+            duration: 5000,
+            isClosable: true,
+          });
+        } finally {
+          setIsRecording(false);
         }
-
-        const { text } = await response.json();
-        console.log('Transcription text:', text);
-        onTranscriptionComplete(text);
-        setIsRecording(false);
       });
 
       mediaRecorder.start();
@@ -67,7 +87,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
       console.error('録音エラー:', error);
       toast({
         title: 'エラー',
-        description: '録音の開始に失敗しました。',
+        description: '録音の開始に失敗しました。マイクへのアクセスが許可されているか確認してください。',
         status: 'error',
         duration: 5000,
         isClosable: true,
@@ -79,9 +99,13 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
-      onTranscriptionStart(); // 録音停止時にonTranscriptionStartを呼び出す
+      onTranscriptionStart();
     }
   };
+
+  if (!isSupported) {
+    return <Box>お使いのデバイスは録音をサポートしていません。</Box>;
+  }
 
   return (
     <Box display="flex" alignItems="center">

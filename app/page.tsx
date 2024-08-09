@@ -77,6 +77,37 @@ export default function Home() {
             <ListItem>表現集:登録表現のリスト表示/音声再生</ListItem>
           </UnorderedList>
         </Box>
+
+        <Box mt={8}>
+          <Heading as="h2" size="lg" mb={4}>追加実装点：</Heading>
+          <UnorderedList spacing={2}>
+            <ListItem>
+              <strong>録音機能の改善</strong>
+              <UnorderedList>
+                <ListItem>モバイルデバイスでの互換性向上</ListItem>
+                <ListItem>エラーハンドリングの強化</ListItem>
+                <ListItem>ユーザーフィードバックの改善</ListItem>
+              </UnorderedList>
+            </ListItem>
+            <ListItem>
+              <strong>翻訳機能の拡張</strong>
+              <UnorderedList>
+                <ListItem>本文の翻訳機能追加</ListItem>
+                <ListItem>翻訳結果を表現リストに追加する機能</ListItem>
+                <ListItem>翻訳UIの改良</ListItem>
+              </UnorderedList>
+            </ListItem>
+            <ListItem>
+              <strong>検索ページのUI改良</strong>
+              <UnorderedList>
+                <ListItem>検索結果の表示方法を最適化</ListItem>
+                <ListItem>フィルタリングオプションの追加</ListItem>
+                <ListItem>ページネーション機能の実装</ListItem>
+              </UnorderedList>
+            </ListItem>
+          </UnorderedList>
+          <p>これらの追加機能により、より使いやすく効果的な英語学習ツールとなりました。</p>
+        </Box>
       </Box>
     </Box>
   );

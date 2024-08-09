@@ -232,13 +232,13 @@ const EditArticlePage = ({ params }: { params: Params }) => {
                 height="150px"
                 mb={4}
               />
-              <HStack spacing={4} mb={4}>
+              <VStack spacing={4} mb={4} align="stretch">
                 <PlayButton text={editingWords} />
                 <SpeechToTextButton 
                   onTranscriptionStart={handleTranscriptionStart}
                   onTranscriptionComplete={handleTranscriptionComplete}
                 />
-              </HStack>
+              </VStack>
               {isProcessing && <Spinner mb={4} />}
             </FormControl>
             
