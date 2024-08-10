@@ -26,6 +26,9 @@ export async function POST(req: NextRequest) {
         encoding: 'WEBM_OPUS',
         sampleRateHertz: 48000,
         languageCode: language,
+        audioChannelCount: 1,
+        enableAutomaticPunctuation: true,
+        model: 'default',
       },
     });
 

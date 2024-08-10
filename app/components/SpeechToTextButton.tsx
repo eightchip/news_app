@@ -20,23 +20,53 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
-      setIsSupported(false);
-      toast({
-        title: '警告',
-        description: 'このブラウザは録音をサポートしていません。',
-        status: 'warning',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
+    const checkBrowserSupport = async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setIsSupported(false);
+        toast({
+          title: '警告',
+          description: 'このブラウザは録音をサポートしていません。',
+          status: 'warning',
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+          setIsSupported(true);
+        } catch (error) {
+          console.error('マイクアクセスエラー:', error);
+          setIsSupported(false);
+          toast({
+            title: '警告',
+            description: 'マイクへのアクセスが許可されていません。',
+            status: 'warning',
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      }
+    };
+
+    checkBrowserSupport();
   }, [toast]);
 
   const startRecording = async () => {
     try {
       setIsRecording(true);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+      const options = {
+        mimeType: 'audio/webm;codecs=opus',
+      };
+      
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        console.warn(`${options.mimeType}はサポートされていません。代替フォーマットを使用します。`);
+        options.mimeType = 'audio/ogg;codecs=opus';
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options.mimeType = '';
+        }
+      }
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       const audioChunks: Blob[] = [];
 
@@ -45,7 +75,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
       });
 
       mediaRecorder.addEventListener('stop', async () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioBlob = new Blob(audioChunks, { type: options.mimeType });
 
         if (audioRef.current) {
           audioRef.current.src = URL.createObjectURL(audioBlob);
@@ -85,9 +115,25 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
       mediaRecorder.start();
     } catch (error) {
       console.error('録音エラー:', error);
+      let errorMessage = '録音の開始に失敗しました。';
+      if (error instanceof DOMException) {
+        switch (error.name) {
+          case 'NotAllowedError':
+            errorMessage += 'マイクへのアクセスが許可されていません。';
+            break;
+          case 'NotFoundError':
+            errorMessage += 'マイクが見つかりません。';
+            break;
+          case 'NotReadableError':
+            errorMessage += 'マイクにアクセスできません。';
+            break;
+          default:
+            errorMessage += 'ブラウザの設定を確認してください。';
+        }
+      }
       toast({
         title: 'エラー',
-        description: '録音の開始に失敗しました。マイクへのアクセスが許可されているか確認してください。',
+        description: errorMessage,
         status: 'error',
         duration: 5000,
         isClosable: true,

@@ -1,13 +1,15 @@
 'use client';
 import NavBar from './components/Navbar';
-import { Box, Heading, UnorderedList, ListItem } from '@chakra-ui/react';
+import { Box, Heading, UnorderedList, ListItem, Image, Text } from '@chakra-ui/react';
 import { useAuth } from './contexts/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import QRCode from 'qrcode';
 
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -15,11 +17,32 @@ export default function Home() {
     }
   }, [loading, user, router]);
 
+  useEffect(() => {
+    const generateQRCode = async () => {
+      try {
+        const url = window.location.href;
+        const qrCodeDataUrl = await QRCode.toDataURL(url);
+        setQrCodeUrl(qrCodeDataUrl);
+      } catch (error) {
+        console.error('QRコードの生成に失敗しました:', error);
+      }
+    };
+
+    generateQRCode();
+  }, []);
+
   return (
     <Box>
       <NavBar />
       <Box p={5} maxW="800px" mx="auto" boxShadow="md" borderRadius="lg" bg="orange.50">
         <Heading as="h1" size="xl" textAlign="center" mb={6} color="orange.600">Read Me</Heading>
+        
+        {qrCodeUrl && (
+          <Box textAlign="center" mb={6}>
+            <Image src={qrCodeUrl} alt="QR Code" mx="auto" boxSize="150px" />
+            <Text fontSize="sm" mt={2}>このページのQRコード</Text>
+          </Box>
+        )}
         
         <Heading as="h2" size="lg" textAlign="center" mb={6} color="orange.500">EchoLingo</Heading>
         
@@ -82,11 +105,9 @@ export default function Home() {
           <Heading as="h2" size="lg" mb={4}>追加実装点：</Heading>
           <UnorderedList spacing={2}>
             <ListItem>
-              <strong>録音機能の改善</strong>
+              <strong>音声認識機能の実装</strong>
               <UnorderedList>
-                <ListItem>モバイルデバイスでの互換性向上</ListItem>
-                <ListItem>エラーハンドリングの強化</ListItem>
-                <ListItem>ユーザーフィードバックの改善</ListItem>
+                <ListItem>英日での音声入力</ListItem>
               </UnorderedList>
             </ListItem>
             <ListItem>
@@ -100,13 +121,10 @@ export default function Home() {
             <ListItem>
               <strong>検索ページのUI改良</strong>
               <UnorderedList>
-                <ListItem>検索結果の表示方法を最適化</ListItem>
-                <ListItem>フィルタリングオプションの追加</ListItem>
-                <ListItem>ページネーション機能の実装</ListItem>
+                <ListItem>レスポンシブUI改良</ListItem>
               </UnorderedList>
             </ListItem>
           </UnorderedList>
-          <p>これらの追加機能により、より使いやすく効果的な英語学習ツールとなりました。</p>
         </Box>
       </Box>
     </Box>
