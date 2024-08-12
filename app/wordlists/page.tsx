@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react';
-import { Box, VStack, Heading, Text, useToast, Flex } from '@chakra-ui/react';
+import { Box, VStack, Heading, Text, useToast, HStack, Select } from '@chakra-ui/react';
 import NavBar from '../components/Navbar';
 import { PlayButton } from '../components/PlayButton';
 
@@ -16,6 +16,8 @@ interface WordList {
 
 const WordListsPage = () => {
   const [wordLists, setWordLists] = useState<WordList[]>([]);
+  const [articleLanguages, setArticleLanguages] = useState<{[key: number]: 'en-US' | 'en-GB'}>({});
+  const [expressionLanguages, setExpressionLanguages] = useState<{[key: number]: 'en-US' | 'en-GB'}>({});
   const toast = useToast();
 
   const fetchWordLists = useCallback(async () => {
@@ -26,6 +28,16 @@ const WordListsPage = () => {
       }
       const data = await response.json();
       setWordLists(data.filter((wordList: WordList) => wordList.words && wordList.words.length > 0));
+      
+      // 初期言語設定
+      const initialArticleLanguages: {[key: number]: 'en-US' | 'en-GB'} = {};
+      const initialExpressionLanguages: {[key: number]: 'en-US' | 'en-GB'} = {};
+      data.forEach((wordList: WordList) => {
+        initialArticleLanguages[wordList.id] = 'en-US';
+        initialExpressionLanguages[wordList.id] = 'en-US';
+      });
+      setArticleLanguages(initialArticleLanguages);
+      setExpressionLanguages(initialExpressionLanguages);
     } catch (error) {
       console.error('Error fetching word lists:', error);
       toast({
@@ -42,6 +54,14 @@ const WordListsPage = () => {
     fetchWordLists();
   }, [fetchWordLists]);
 
+  const handleArticleLanguageChange = (wordListId: number, language: 'en-US' | 'en-GB') => {
+    setArticleLanguages(prev => ({...prev, [wordListId]: language}));
+  };
+
+  const handleExpressionLanguageChange = (wordListId: number, language: 'en-US' | 'en-GB') => {
+    setExpressionLanguages(prev => ({...prev, [wordListId]: language}));
+  };
+
   return (
     <Box>
       <NavBar />
@@ -52,14 +72,32 @@ const WordListsPage = () => {
             <Box key={wordList.id} p={3} borderWidth="1px" borderRadius="sm" bg="white">
               <Heading size="md" mb={1} color="orange.500" fontSize="lg">{wordList.article.title}</Heading>
               <Text fontSize="sm" mb={1} color="gray.600">{wordList.article.description}</Text>
-              <Box mb={2}>
-                <PlayButton text={wordList.article.description} />
-              </Box>
+              <HStack mb={2}>
+                <Select
+                  value={articleLanguages[wordList.id]}
+                  onChange={(e) => handleArticleLanguageChange(wordList.id, e.target.value as 'en-US' | 'en-GB')}
+                  size="sm"
+                  width="auto"
+                >
+                  <option value="en-US">US</option>
+                  <option value="en-GB">UK</option>
+                </Select>
+                <PlayButton text={wordList.article.description} language={articleLanguages[wordList.id]} />
+              </HStack>
               <Text fontWeight="bold" mb={1} fontSize="sm">登録した表現:</Text>
               <Text mb={1} fontSize="sm">{wordList.words.join(', ')}</Text>
-              <Box>
-                <PlayButton text={wordList.words.join(', ')} />
-              </Box>
+              <HStack>
+                <Select
+                  value={expressionLanguages[wordList.id]}
+                  onChange={(e) => handleExpressionLanguageChange(wordList.id, e.target.value as 'en-US' | 'en-GB')}
+                  size="sm"
+                  width="auto"
+                >
+                  <option value="en-US">US</option>
+                  <option value="en-GB">UK</option>
+                </Select>
+                <PlayButton text={wordList.words.join(', ')} language={expressionLanguages[wordList.id]} />
+              </HStack>
             </Box>
           ))}
         </VStack>

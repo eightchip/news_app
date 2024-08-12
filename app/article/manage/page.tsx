@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Spinner, VStack, Checkbox, HStack } from '@chakra-ui/react';
+import { Box, Button, Heading, List, ListItem, Text, useToast, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Flex, Spacer, Link, Spinner, VStack, Checkbox, HStack, Select } from '@chakra-ui/react';
 import NavBar from '../../components/Navbar';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Article } from '../../types/Article';
 import { useRouter } from 'next/navigation';
+import { PlayButton } from '@/app/components/PlayButton';
 
 const ArticleManage = () => {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -17,6 +18,7 @@ const ArticleManage = () => {
   const toast = useToast();
   const supabase = createClientComponentClient();
   const router = useRouter();
+  const [articleLanguages, setArticleLanguages] = useState<{[key: string]: 'en-US' | 'en-GB'}>({});
 
   const fetchArticles = useCallback(async () => {
     setIsLoading(true);
@@ -113,6 +115,10 @@ const ArticleManage = () => {
     setIsOpen(true);
   };
 
+  const handleLanguageChange = (articleId: string, language: 'en-US' | 'en-GB') => {
+    setArticleLanguages(prev => ({...prev, [articleId]: language}));
+  };
+
   if (isLoading) {
     return (
       <Box>
@@ -134,6 +140,7 @@ const ArticleManage = () => {
       <NavBar />
       <Box maxW="800px" mx="auto" mt={2} px={[1, 2]} bg="orange.50">
         <Heading mb={2} color="orange.600" textAlign="center" fontSize={["xl", "2xl"]}>Edit Articles</Heading>
+        
         {articles.length === 0 ? (
           <Text>保存された記事はありません。</Text>
         ) : (
@@ -161,6 +168,20 @@ const ArticleManage = () => {
                       <Button size="sm" colorScheme="red" width="100%" onClick={() => openDeleteDialog(article.id)}>Delete</Button>
                     </VStack>
                   </Flex>
+                  <Box mt={2}>
+                    <HStack>
+                      <Select
+                        value={articleLanguages[article.id] || 'en-US'}
+                        onChange={(e) => handleLanguageChange(article.id, e.target.value as 'en-US' | 'en-GB')}
+                        size="sm"
+                        width="auto"
+                      >
+                        <option value="en-US">US</option>
+                        <option value="en-GB">UK</option>
+                      </Select>
+                      <PlayButton text={article.description} language={articleLanguages[article.id] || 'en-US'} />
+                    </HStack>
+                  </Box>
                 </ListItem>
               ))}
             </List>

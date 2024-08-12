@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Button, FormControl, FormLabel, Input, Textarea, Text, VStack, HStack, useToast, Icon, Spinner } from '@chakra-ui/react';
+import { Box, Button, FormControl, FormLabel, Input, Textarea, Text, VStack, HStack, useToast, Icon, Spinner, Select, Flex } from '@chakra-ui/react';
 import { FaSave } from 'react-icons/fa';
 import NavBar from '../../../components/Navbar';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -17,7 +17,6 @@ interface Article {
   description: string;
   url: string;
   imageUrl: string;
-  language: string; // Added language property
 }
 
 interface WordList {
@@ -27,7 +26,7 @@ interface WordList {
 }
 
 const EditArticlePage = ({ params }: { params: Params }) => {
-  const [article, setArticle] = useState<Article>({ title: '', description: '', url: '', imageUrl: '', language: 'ja-JP' }); // Set default language to Japanese
+  const [article, setArticle] = useState<Article>({ title: '', description: '', url: '', imageUrl: '' });
   const [wordList, setWordList] = useState<WordList>({ id: 0, words: [], articleId: 0 });
   const [editingWords, setEditingWords] = useState('');
   const [translatedWords, setTranslatedWords] = useState('');
@@ -35,6 +34,9 @@ const EditArticlePage = ({ params }: { params: Params }) => {
   const toast = useToast();
   const supabase = createClientComponentClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<'en-US' | 'en-GB'>('en-US');
+  const [wordListLanguage, setWordListLanguage] = useState<'en-US' | 'en-GB'>('en-US');
+  const [speechToTextLanguage, setSpeechToTextLanguage] = useState<'ja-JP' | 'en-US' | 'en-GB'>('ja-JP');
 
   const fetchArticle = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -129,7 +131,7 @@ const EditArticlePage = ({ params }: { params: Params }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: article.description, sourceLanguage: article.language, targetLanguage: 'en-US' }), // Pass article language as source language
+        body: JSON.stringify({ text: article.description }),
       });
       
       if (response.ok) {
@@ -203,14 +205,26 @@ const EditArticlePage = ({ params }: { params: Params }) => {
                 bg="white"
               />
               <Box mt={2}>
-                <PlayButton text={article.description} language={article.language} /> {/* Pass article language to PlayButton */}
+                <Flex alignItems="center">
+                  <Select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value as 'en-US' | 'en-GB')}
+                    width="auto"
+                    size="sm"
+                    mr={2}
+                  >
+                    <option value="en-US">US</option>
+                    <option value="en-GB">UK</option>
+                  </Select>
+                  <PlayButton text={article.description} language={selectedLanguage} size="sm" />
+                </Flex>
               </Box>
             </FormControl>
             
             <FormControl>
               <FormLabel color="orange.600" fontWeight="bold">翻訳</FormLabel>
-              <Button onClick={handleTranslate} colorScheme="teal" mb={4}>
-                本文を翻訳
+              <Button onClick={handleTranslate} colorScheme="teal" mb={4} size="sm">
+                本文を和訳
               </Button>
               <Textarea
                 value={translatedWords}
@@ -219,7 +233,7 @@ const EditArticlePage = ({ params }: { params: Params }) => {
                 height="150px"
                 mb={4}
               />
-              <Button onClick={handleAddToWordList} colorScheme="blue" mb={4} isDisabled={!translatedWords.trim()}>
+              <Button onClick={handleAddToWordList} colorScheme="blue" mb={4} isDisabled={!translatedWords.trim()} size="sm">
                 表現リストに追加
               </Button>
             </FormControl>
@@ -233,19 +247,43 @@ const EditArticlePage = ({ params }: { params: Params }) => {
                 height="150px"
                 mb={4}
               />
-              <VStack spacing={4} mb={4} align="stretch">
-                <PlayButton text={editingWords} language={article.language} /> {/* Pass article language to PlayButton */}
-                <SpeechToTextButton 
-                  onTranscriptionStart={handleTranscriptionStart}
-                  onTranscriptionComplete={handleTranscriptionComplete}
-                  language={article.language} // Pass article language to SpeechToTextButton
-                />
+              <VStack align="start" spacing={2} mt={2}>
+                <HStack>
+                  <Select
+                    value={wordListLanguage}
+                    onChange={(e) => setWordListLanguage(e.target.value as 'en-US' | 'en-GB')}
+                    size="sm"
+                    width="auto"
+                  >
+                    <option value="en-US">US</option>
+                    <option value="en-GB">UK</option>
+                  </Select>
+                  <PlayButton text={editingWords} language={wordListLanguage} size="sm" />
+                </HStack>
+                <HStack>
+                  <Select
+                    value={speechToTextLanguage}
+                    onChange={(e) => setSpeechToTextLanguage(e.target.value as 'ja-JP' | 'en-US' | 'en-GB')}
+                    size="sm"
+                    width="auto"
+                  >
+                    <option value="ja-JP">JPN</option>
+                    <option value="en-US">US</option>
+                    <option value="en-GB">UK</option>
+                  </Select>
+                  <SpeechToTextButton 
+                    onTranscriptionStart={handleTranscriptionStart}
+                    onTranscriptionComplete={handleTranscriptionComplete}
+                    language={speechToTextLanguage}
+                    size="sm"
+                  />
+                </HStack>
               </VStack>
               {isProcessing && <Spinner mb={4} />}
             </FormControl>
             
             <Box display="flex" flexWrap="wrap" justifyContent="flex-start" mt={4} gap={2}>
-              <Button type="submit" colorScheme="blue" leftIcon={<Icon as={FaSave} />} fontSize={{ base: 'sm', md: 'md' }} px={4} py={2}>
+              <Button type="submit" colorScheme="blue" leftIcon={<Icon as={FaSave} />} fontSize={{ base: 'sm', md: 'md' }} px={4} py={2} size="sm">
                 更新
               </Button>
             </Box>

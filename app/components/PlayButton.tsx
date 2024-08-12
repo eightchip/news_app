@@ -1,27 +1,15 @@
 // components/PlayButton.tsx
 import React, { useState, useRef } from 'react';
-import { Button, Icon, Box, Select } from '@chakra-ui/react';
+import { Button, Icon, Box } from '@chakra-ui/react';
 import { FaVolumeUp, FaPause } from 'react-icons/fa';
 
 interface PlayButtonProps {
   text: string;
-  language: string;
+  language: 'en-US' | 'en-GB';
+  size?: string;
 }
 
-const languageOptions = [
-  { value: 'ja-JP', label: '日本語' },
-  { value: 'en-US', label: 'English (US)' },
-  { value: 'en-GB', label: 'English (UK)' },
-  { value: 'ko-KR', label: '한국어' },
-  { value: 'zh-CN', label: '中文 (简体)' },
-  { value: 'zh-HK', label: '中文 (香港)' },
-  { value: 'th-TH', label: 'ไทย' },
-  { value: 'id-ID', label: 'Bahasa Indonesia' },
-  { value: 'hi-IN', label: 'हिन्दी' },
-  { value: 'vi-VN', label: 'Tiếng Việt' }, // ベトナム語を追加
-];
-
-export const PlayButton: React.FC<PlayButtonProps> = ({ text, language }) => {
+export const PlayButton: React.FC<PlayButtonProps> = ({ text, language, size }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -77,23 +65,24 @@ export const PlayButton: React.FC<PlayButtonProps> = ({ text, language }) => {
         isDisabled={isPlaying || isLoading}
         variant="outline"
         colorScheme="teal"
-        size="md"
+        size={size}
         width="auto"
       >
-        再生
+        再生 ({language === 'en-US' ? 'US' : 'UK'})
       </Button>
-      <Button
-        ml={2}
-        leftIcon={<Icon as={FaPause} />}
-        onClick={handlePause}
-        isDisabled={!isPlaying || isLoading}
-        variant="outline"
-        colorScheme="red"
-        size="md"
-        width="auto"
-      >
-        停止
-      </Button>
+      <Box ml={2}>
+        <Button
+          leftIcon={<Icon as={FaPause} />}
+          onClick={handlePause}
+          isDisabled={!isPlaying || isLoading}
+          variant="outline"
+          colorScheme="teal"
+          size={size}
+          width="auto"
+        >
+          停止
+        </Button>
+      </Box>
       <audio ref={audioRef} onEnded={handleAudioEnded} />
     </Box>
   );

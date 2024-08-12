@@ -31,6 +31,7 @@ const ArticleSearch = () => {
   const [allArticlesSelected, setAllArticlesSelected] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [articleLanguages, setArticleLanguages] = useState<{ [key: string]: 'en-US' | 'en-GB' }>({});
 
   const router = useRouter();
   const toast = useToast();
@@ -201,6 +202,13 @@ const ArticleSearch = () => {
     setAllArticlesSelected(!allArticlesSelected);
   };
 
+  const handleLanguageChange = (articleId: string, newLanguage: 'en-US' | 'en-GB') => {
+    setArticleLanguages(prevLanguages => ({
+      ...prevLanguages,
+      [articleId]: newLanguage
+    }));
+  };
+
   const paginatedArticles = articles ? articles.slice((page - 1) * articlesPerPage, page * articlesPerPage) : [];
 
   if (isLoading) {
@@ -228,7 +236,7 @@ const ArticleSearch = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="type keyword in English"
-            width="50%"
+            width="70%"
             textAlign="center"
           />
         </Flex>
@@ -268,7 +276,7 @@ const ArticleSearch = () => {
             {isSearching ? (
               <>
                 <Spinner size="sm" mr={2} />
-                検索しています...
+              検索しています...
               </>
             ) : (
               'Search'
@@ -306,7 +314,19 @@ const ArticleSearch = () => {
                       </Text>
                       <Text fontSize={["xs", "sm"]} mt={2}>{article.description}</Text>
                       <Box mt={2}>
-                        <PlayButton text={article.description} />
+                        <Flex alignItems="center">
+                          <Select
+                            value={articleLanguages[articleId] || 'en-US'}
+                            onChange={(e) => handleLanguageChange(articleId, e.target.value as 'en-US' | 'en-GB')}
+                            size="sm"
+                            width="auto"
+                            mr={2}
+                          >
+                            <option value="en-US">US</option>
+                            <option value="en-GB">UK</option>
+                          </Select>
+                          <PlayButton text={article.description} language={articleLanguages[articleId] || 'en-US'} />
+                        </Flex>
                       </Box>
                     </Box>
                   </Flex>

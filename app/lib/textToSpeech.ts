@@ -1,4 +1,3 @@
-// app/lib/textToSpeech
 'use server'
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 
@@ -12,15 +11,23 @@ export async function textToSpeech(text: string, language: string = 'en-US'): Pr
   
   console.log('Synthesizing speech with language:', language); // Added for debugging
 
-  const [response] = await client.synthesizeSpeech({
-    input: { text },
-    voice: { languageCode: language, ssmlGender: 'NEUTRAL' },
-    audioConfig: { audioEncoding: 'MP3' },
-  });
+  // Convert language code to Google Cloud TTS API format
+  const languageCode = language.split('-')[0] + '-' + language.split('-')[1].toUpperCase();
 
-  if (response.audioContent instanceof Uint8Array) {
-    return response.audioContent;
+  try {
+    const [response] = await client.synthesizeSpeech({
+      input: { text },
+      voice: { languageCode: languageCode, ssmlGender: 'NEUTRAL' },
+      audioConfig: { audioEncoding: 'MP3' },
+    });
+
+    if (response.audioContent instanceof Uint8Array) {
+      return response.audioContent;
+    }
+    
+    throw new Error('Audio data is not in the expected format');
+  } catch (error) {
+    console.error('Text-to-Speech error:', error);
+    throw new Error(`Failed to generate audio data: ${(error as Error).message}`);
   }
-  
-  throw new Error('音声データの生成に失敗しました');
 }

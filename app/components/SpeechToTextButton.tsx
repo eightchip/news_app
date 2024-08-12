@@ -6,26 +6,21 @@ import { FaMicrophone, FaStop } from 'react-icons/fa';
 interface SpeechToTextButtonProps {
   onTranscriptionComplete: (text: string) => void;
   onTranscriptionStart: () => void;
-  language: string;
+  language: 'ja-JP' | 'en-US' | 'en-GB';
+  size?: string; // Added size property
 }
 
 const languageOptions = [
   { value: 'ja-JP', label: '日本語' },
   { value: 'en-US', label: 'English (US)' },
   { value: 'en-GB', label: 'English (UK)' },
-  { value: 'ko-KR', label: '한국어' },
-  { value: 'zh-CN', label: '中文 (简体)' },
-  { value: 'zh-HK', label: '中文 (香港)' },
-  { value: 'th-TH', label: 'ไทย' },
-  { value: 'id-ID', label: 'Bahasa Indonesia' },
-  { value: 'hi-IN', label: 'हिन्दी' },
-  { value: 'vi-VN', label: 'Tiếng Việt' }, // ベトナム語を追加
 ];
 
 export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ 
   onTranscriptionComplete,
   onTranscriptionStart,
-  language
+  language,
+  size // Added size property
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
@@ -175,7 +170,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
         isDisabled={isRecording}
         variant="outline"
         colorScheme="teal"
-        size="md"
+        size={size} // Use size property
         width="auto"
       >
         録音
@@ -187,7 +182,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
         isDisabled={!isRecording}
         variant="outline"
         colorScheme="red"
-        size="md"
+        size={size} // Use size property
         width="auto"
       >
         停止
