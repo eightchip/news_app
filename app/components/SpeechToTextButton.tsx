@@ -5,6 +5,7 @@ import { FaMicrophone, FaStop } from 'react-icons/fa';
 
 interface SpeechToTextButtonProps {
   onTranscriptionComplete: (text: string) => void;
+  onTranscriptionStart: () => void;
   language: string;
 }
 
@@ -23,6 +24,7 @@ const languageOptions = [
 
 export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ 
   onTranscriptionComplete,
+  onTranscriptionStart,
   language
 }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -64,6 +66,7 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
   }, [toast]);
 
   const startRecording = async () => {
+    onTranscriptionStart();
     try {
       setIsRecording(true);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
