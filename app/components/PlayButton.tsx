@@ -5,11 +5,11 @@ import { FaVolumeUp, FaPause } from 'react-icons/fa';
 
 interface PlayButtonProps {
   text: string;
-  language: 'en-US' | 'en-GB';
+  language?: string;
   size?: string;
 }
 
-export const PlayButton: React.FC<PlayButtonProps> = ({ text, language, size }) => {
+export const PlayButton: React.FC<PlayButtonProps> = ({ text, language = 'en-US', size }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);

@@ -58,7 +58,7 @@ const WordListsComponent = ({ initialWordLists }: WordListsComponentProps) => {
               <Text fontSize="sm" mb={2} color="gray.600">{wordList.article.description}</Text>
               <Text fontWeight="bold" mb={2}>単語・表現:</Text>
               <Text mb={3}>{wordList.words.join(', ')}</Text>
-              <PlayButton text={wordList.words.join(', ')} />
+              <PlayButton text={wordList.words.join(', ')} language="en-US" />
             </Box>
           ))}
         </VStack>
