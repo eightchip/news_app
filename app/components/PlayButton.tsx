@@ -5,12 +5,25 @@ import { FaVolumeUp, FaPause } from 'react-icons/fa';
 
 interface PlayButtonProps {
   text: string;
+  language: string;
 }
 
-export const PlayButton: React.FC<PlayButtonProps> = ({ text }) => {
+const languageOptions = [
+  { value: 'ja-JP', label: '日本語' },
+  { value: 'en-US', label: 'English (US)' },
+  { value: 'en-GB', label: 'English (UK)' },
+  { value: 'ko-KR', label: '한국어' },
+  { value: 'zh-CN', label: '中文 (简体)' },
+  { value: 'zh-HK', label: '中文 (香港)' },
+  { value: 'th-TH', label: 'ไทย' },
+  { value: 'id-ID', label: 'Bahasa Indonesia' },
+  { value: 'hi-IN', label: 'हिन्दी' },
+  { value: 'vi-VN', label: 'Tiếng Việt' }, // ベトナム語を追加
+];
+
+export const PlayButton: React.FC<PlayButtonProps> = ({ text, language }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [language, setLanguage] = useState<'en-US' | 'en-GB' | 'ja-JP'>('en-US');
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handlePlay = async () => {
@@ -64,35 +77,23 @@ export const PlayButton: React.FC<PlayButtonProps> = ({ text }) => {
         isDisabled={isPlaying || isLoading}
         variant="outline"
         colorScheme="teal"
-        size="sm"
+        size="md"
         width="auto"
       >
         再生
       </Button>
-      <Box ml={2}>
-        <Button
-          leftIcon={<Icon as={FaPause} />}
-          onClick={handlePause}
-          isDisabled={!isPlaying || isLoading}
-          variant="outline"
-          colorScheme="teal"
-          size="sm"
-          width="auto"
-        >
-          停止
-        </Button>
-      </Box>
-      <Box ml={2}>
-        <Select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value as 'en-US' | 'en-GB' | 'ja-JP')}
-          size="sm"
-        >
-          <option value="en-US">US</option>
-          <option value="en-GB">UK</option>
-          <option value="ja-JP">JP</option>
-        </Select>
-      </Box>
+      <Button
+        ml={2}
+        leftIcon={<Icon as={FaPause} />}
+        onClick={handlePause}
+        isDisabled={!isPlaying || isLoading}
+        variant="outline"
+        colorScheme="red"
+        size="md"
+        width="auto"
+      >
+        停止
+      </Button>
       <audio ref={audioRef} onEnded={handleAudioEnded} />
     </Box>
   );

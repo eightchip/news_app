@@ -1,17 +1,21 @@
-import { NextResponse } from 'next/server';
-import { v2 } from '@google-cloud/translate';
+import { NextRequest, NextResponse } from 'next/server';
+import { Translate } from '@google-cloud/translate/build/src/v2';
 
-const translate = new v2.Translate({
-  key: process.env.GOOGLE_TRANSLATE_API_KEY
-});
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { text } = await req.json();
-    const [translation] = await translate.translate(text, 'ja');
+    const { text, sourceLanguage, targetLanguage } = await req.json();
+
+    const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON!, 'base64').toString());
+    const translate = new Translate({ credentials });
+
+    const [translation] = await translate.translate(text, {
+      from: sourceLanguage,
+      to: targetLanguage,
+    });
+
     return NextResponse.json({ translation });
   } catch (error) {
-    console.error('Translation error:', error);
-    return NextResponse.json({ error: 'Translation failed' }, { status: 500 });
+    console.error('翻訳エラー:', error);
+    return NextResponse.json({ error: '翻訳処理に失敗しました' }, { status: 500 });
   }
 }

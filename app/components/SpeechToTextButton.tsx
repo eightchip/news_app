@@ -5,15 +5,27 @@ import { FaMicrophone, FaStop } from 'react-icons/fa';
 
 interface SpeechToTextButtonProps {
   onTranscriptionComplete: (text: string) => void;
-  onTranscriptionStart: () => void;
+  language: string;
 }
 
+const languageOptions = [
+  { value: 'ja-JP', label: '日本語' },
+  { value: 'en-US', label: 'English (US)' },
+  { value: 'en-GB', label: 'English (UK)' },
+  { value: 'ko-KR', label: '한국어' },
+  { value: 'zh-CN', label: '中文 (简体)' },
+  { value: 'zh-HK', label: '中文 (香港)' },
+  { value: 'th-TH', label: 'ไทย' },
+  { value: 'id-ID', label: 'Bahasa Indonesia' },
+  { value: 'hi-IN', label: 'हिन्दी' },
+  { value: 'vi-VN', label: 'Tiếng Việt' }, // ベトナム語を追加
+];
+
 export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({ 
-  onTranscriptionComplete, 
-  onTranscriptionStart 
+  onTranscriptionComplete,
+  language
 }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [language, setLanguage] = useState('en-US');
   const [isSupported, setIsSupported] = useState(true);
   const toast = useToast();
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -145,7 +157,6 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
-      onTranscriptionStart();
     }
   };
 
@@ -161,34 +172,23 @@ export const SpeechToTextButton: React.FC<SpeechToTextButtonProps> = ({
         isDisabled={isRecording}
         variant="outline"
         colorScheme="teal"
-        size="sm"
+        size="md"
         width="auto"
       >
         録音
       </Button>
-      <Box ml={2}>
-        <Button
-          leftIcon={<Icon as={FaStop} />}
-          onClick={stopRecording}
-          isDisabled={!isRecording}
-          variant="outline"
-          colorScheme="teal"
-          size="sm"
-          width="auto"
-        >
-          停止
-        </Button>
-      </Box>
-      <Box ml={2}>
-        <Select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          size="sm"
-        >
-          <option value="en-US">English</option>
-          <option value="ja-JP">日本語</option>
-        </Select>
-      </Box>
+      <Button
+        ml={2}
+        leftIcon={<Icon as={FaStop} />}
+        onClick={stopRecording}
+        isDisabled={!isRecording}
+        variant="outline"
+        colorScheme="red"
+        size="md"
+        width="auto"
+      >
+        停止
+      </Button>
       <audio ref={audioRef} controls style={{ display: 'none' }} />
     </Box>
   );

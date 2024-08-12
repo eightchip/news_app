@@ -3,7 +3,7 @@ import NextLink from 'next/link';
 import { Flex, Button, Box, keyframes, IconButton, VStack } from '@chakra-ui/react';
 import { usePathname } from 'next/navigation';
 import LogoutButton from '../components/Logout';
-import { FaHome, FaSearch, FaEdit, FaBook } from 'react-icons/fa';
+import { FaHome, FaSearch, FaEdit, FaBook, FaUserFriends } from 'react-icons/fa';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { useState } from 'react';
 
@@ -23,6 +23,7 @@ const NavBar = () => {
     { href: '/article/search', label: '記事検索', icon: FaSearch },
     { href: '/article/manage', label: '記事編集', icon: FaEdit },
     { href: '/wordlists', label: '表現集', icon: FaBook },
+    { href: '/global_talk', label: 'グローバルトーク', icon: FaUserFriends },
   ];
 
   return (
