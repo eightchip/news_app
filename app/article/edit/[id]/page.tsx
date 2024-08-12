@@ -17,6 +17,7 @@ interface Article {
   description: string;
   url: string;
   imageUrl: string;
+  language: string; // Added language property
 }
 
 interface WordList {
@@ -26,7 +27,7 @@ interface WordList {
 }
 
 const EditArticlePage = ({ params }: { params: Params }) => {
-  const [article, setArticle] = useState<Article>({ title: '', description: '', url: '', imageUrl: '' });
+  const [article, setArticle] = useState<Article>({ title: '', description: '', url: '', imageUrl: '', language: 'ja-JP' }); // Set default language to Japanese
   const [wordList, setWordList] = useState<WordList>({ id: 0, words: [], articleId: 0 });
   const [editingWords, setEditingWords] = useState('');
   const [translatedWords, setTranslatedWords] = useState('');
@@ -128,7 +129,7 @@ const EditArticlePage = ({ params }: { params: Params }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: article.description }),
+        body: JSON.stringify({ text: article.description, sourceLanguage: article.language, targetLanguage: 'en-US' }), // Pass article language as source language
       });
       
       if (response.ok) {
@@ -202,7 +203,7 @@ const EditArticlePage = ({ params }: { params: Params }) => {
                 bg="white"
               />
               <Box mt={2}>
-                <PlayButton text={article.description} />
+                <PlayButton text={article.description} language={article.language} /> {/* Pass article language to PlayButton */}
               </Box>
             </FormControl>
             
@@ -233,10 +234,11 @@ const EditArticlePage = ({ params }: { params: Params }) => {
                 mb={4}
               />
               <VStack spacing={4} mb={4} align="stretch">
-                <PlayButton text={editingWords} />
+                <PlayButton text={editingWords} language={article.language} /> {/* Pass article language to PlayButton */}
                 <SpeechToTextButton 
                   onTranscriptionStart={handleTranscriptionStart}
                   onTranscriptionComplete={handleTranscriptionComplete}
+                  language={article.language} // Pass article language to SpeechToTextButton
                 />
               </VStack>
               {isProcessing && <Spinner mb={4} />}
