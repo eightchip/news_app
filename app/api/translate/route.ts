@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const translate = new Translate({ credentials });
 
     console.time('translation');
-    let translation;
+    let translation: string;
     // グローバルトーク用の処理
     if (sourceLanguage && targetLanguage) {
       [translation] = await Promise.race([
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
           to: languageMap[targetLanguage] || targetLanguage,
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Translation timeout')), 20000))
-      ]);
+      ]) as [string];
     } 
     // 記事編集ページ用の処理（日本語への翻訳）
     else {
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
           to: 'ja',
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Translation timeout')), 20000))
-      ]);
+      ]) as [string];
     }
     console.timeEnd('translation');
 
