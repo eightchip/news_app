@@ -89,6 +89,9 @@ const GlobalTalkPage = () => {
   const translateText = async (text: string) => {
     setIsTranslating(true);
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒でタイムアウト
+
       const response = await fetch('/api/translate', {
         method: 'POST',
         headers: {
@@ -99,25 +102,31 @@ const GlobalTalkPage = () => {
           sourceLanguage: sourceLanguage.split('-')[0],
           targetLanguage: targetLanguage.split('-')[0],
         }),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
       
-      if (response.ok) {
-        const { translation } = await response.json();
-        setTranslatedText(translation);
-        setCurrentTranslation({
-          sourceText: text,
-          translatedText: translation,
-          sourceLanguage,
-          targetLanguage
-        });
-      } else {
-        throw new Error('翻訳に失敗しました');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`翻訳に失敗しました: ${errorData.message || response.statusText}`);
       }
+
+      const { translation } = await response.json();
+      setTranslatedText(translation);
+      setCurrentTranslation({
+        sourceText: text,
+        translatedText: translation,
+        sourceLanguage,
+        targetLanguage
+      });
     } catch (error) {
       console.error('翻訳エラー:', error);
       toast({
         title: '翻訳エラー',
-        description: '翻訳中にエラーが発生しました。もう一度お試しください。',
+        description: error instanceof Error 
+          ? (error.name === 'AbortError' ? '翻訳がタイムアウトしました。もう一度お試しください。' : error.message)
+          : '翻訳中にエラーが発生しました。もう一度お試しください。',
         status: 'error',
         duration: 5000,
         isClosable: true,
