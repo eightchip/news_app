@@ -74,3 +74,5 @@ export const GlobalTalkPlayButton: React.FC<GlobalTalkPlayButtonProps> = ({ text
     </>
   );
 };
+
+GlobalTalkPlayButton.displayName = 'GlobalTalkPlayButton';

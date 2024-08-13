@@ -110,3 +110,5 @@ export const GlobalTalkRecordButton = forwardRef<{ stopRecording: () => void }, 
     );
   }
 );
+
+GlobalTalkRecordButton.displayName = 'GlobalTalkRecordButton';
