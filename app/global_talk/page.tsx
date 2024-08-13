@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, VStack, HStack, Text, Select, Button, Flex, useToast, Spinner, Textarea } from '@chakra-ui/react';
 import NavBar from '../components/Navbar';
 import { globalTalkLanguageOptions } from '../global_talk/constants';
@@ -13,18 +13,32 @@ interface TranslationHistory {
   targetLanguage: string;
 }
 
+interface HistorySession {
+  sourceLanguage: string;
+  targetLanguage: string;
+  translations: TranslationHistory[];
+}
+
 const GlobalTalkPage = () => {
   const [sourceLanguage, setSourceLanguage] = useState('ja-JP');
   const [targetLanguage, setTargetLanguage] = useState('en-US');
   const [sourceText, setSourceText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
-  const [history, setHistory] = useState<TranslationHistory[]>([]);
+  const [historySessions, setHistorySessions] = useState<HistorySession[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPlayButtonDisabled, setIsPlayButtonDisabled] = useState(true);
+  const recordButtonRef = useRef<{ stopRecording: () => void } | null>(null);
   const toast = useToast();
+  const [currentTranslation, setCurrentTranslation] = useState<TranslationHistory | null>(null);
 
   useEffect(() => {
     setSourceText('');
     setTranslatedText('');
+    setHistorySessions(prev => [
+      ...prev,
+      { sourceLanguage, targetLanguage, translations: [] }
+    ]);
   }, [sourceLanguage, targetLanguage]);
 
   const handleLanguageSwitch = () => {
@@ -35,6 +49,41 @@ const GlobalTalkPage = () => {
   const handleTranscriptionComplete = async (text: string) => {
     setSourceText(text);
     await translateText(text);
+  };
+
+  const handleRecordingStart = () => {
+    setIsRecording(true);
+    setCurrentTranslation(null);
+    setIsPlayButtonDisabled(true);
+  };
+
+  const handleRecordingStop = () => {
+    setIsRecording(false);
+    setIsPlayButtonDisabled(false);
+  };
+
+  const handlePlayButtonClick = () => {
+    if (isRecording) {
+      toast({
+        title: '警告',
+        description: '再生する前に録音を停止してください。',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    if (currentTranslation) {
+      setHistorySessions(prev => {
+        const newSessions = [...prev];
+        const currentSession = newSessions[newSessions.length - 1];
+        currentSession.translations.push(currentTranslation);
+        return newSessions;
+      });
+      // 音声再生のロジックをここに追加
+      // 例: playAudio(currentTranslation.translatedText);
+    }
   };
 
   const translateText = async (text: string) => {
@@ -55,12 +104,12 @@ const GlobalTalkPage = () => {
       if (response.ok) {
         const { translation } = await response.json();
         setTranslatedText(translation);
-        setHistory(prev => [...prev, {
+        setCurrentTranslation({
           sourceText: text,
           translatedText: translation,
           sourceLanguage,
           targetLanguage
-        }]);
+        });
       } else {
         throw new Error('翻訳に失敗しました');
       }
@@ -118,7 +167,10 @@ const GlobalTalkPage = () => {
           <HStack mt={4} spacing={4}>
             <GlobalTalkRecordButton 
               onTranscriptionComplete={handleTranscriptionComplete}
+              onRecordingStart={handleRecordingStart}
+              onRecordingStop={handleRecordingStop}
               language={sourceLanguage}
+              ref={recordButtonRef}
             />
             <Button onClick={() => translateText(sourceText)} colorScheme="blue">
               翻訳
@@ -142,18 +194,28 @@ const GlobalTalkPage = () => {
             <GlobalTalkPlayButton 
               text={translatedText} 
               language={globalTalkLanguageOptions.find(l => l.value === targetLanguage)?.ttsCode || targetLanguage} 
+              onPlayButtonClick={handlePlayButtonClick}
+              isDisabled={isPlayButtonDisabled}
             />
           </HStack>
         </Box>
 
-        {history.length > 0 && (
+        {historySessions.length > 0 && (
           <Box borderWidth={1} borderRadius="lg" p={6}>
             <Text fontSize="xl" fontWeight="bold" mb={4}>翻訳履歴:</Text>
             <VStack align="stretch" spacing={4}>
-              {history.slice(-5).reverse().map((item, index) => (
-                <Box key={index} p={2} borderWidth={1} borderRadius="md">
-                  <Text><strong>{item.sourceLanguage}:</strong> {item.sourceText}</Text>
-                  <Text><strong>{item.targetLanguage}:</strong> {item.translatedText}</Text>
+              {historySessions.map((session, sessionIndex) => (
+                <Box key={sessionIndex} p={2} borderWidth={1} borderRadius="md">
+                  <Text fontWeight="bold">
+                    {globalTalkLanguageOptions.find(l => l.value === session.sourceLanguage)?.displayName} →{' '}
+                    {globalTalkLanguageOptions.find(l => l.value === session.targetLanguage)?.displayName}
+                  </Text>
+                  {session.translations.map((item, index) => (
+                    <Box key={index} mt={2}>
+                      <Text><strong>{item.sourceLanguage}:</strong> {item.sourceText}</Text>
+                      <Text><strong>{item.targetLanguage}:</strong> {item.translatedText}</Text>
+                    </Box>
+                  ))}
                 </Box>
               ))}
             </VStack>

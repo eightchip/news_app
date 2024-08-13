@@ -46,38 +46,6 @@ export default function Home() {
         
         <Heading as="h2" size="lg" textAlign="center" mb={6} color="orange.500">EchoLingo</Heading>
         
-        <Box mt={5}>
-          <Heading as="h2" size="lg" mb={4}>使用方法</Heading>
-          <UnorderedList spacing={3}>
-            <ListItem>
-              アカウントを作成してログインします。<br />
-              メールアドレスはダミーでOKです（メールは送信されません）。
-            </ListItem>
-            <ListItem>
-              記事検索：
-              <UnorderedList>
-                <ListItem>検索語を入力し、主要な英語メディアの記事を検索します。</ListItem>
-                <ListItem>興味のある記事を保存します。</ListItem>
-              </UnorderedList>
-            </ListItem>
-            <ListItem>
-              記事編集：
-              <UnorderedList>
-                <ListItem>保存した記事の編集・削除が出来ます。</ListItem>
-                <ListItem>本文：編集と音声再生が出来ます（米語・英語の切り替え可能）。</ListItem>
-                <ListItem>表現リスト：表現集で再生し、リスニング・シャドーイング練習が出来ます。</ListItem>
-              </UnorderedList>
-            </ListItem>
-            <ListItem>
-              表現集：
-              <UnorderedList>
-                <ListItem>登録した表現の音声再生が可能です（米語・英語の切り替え可能）。</ListItem>
-                <ListItem>登録した表現は記事ごとに管理されます。</ListItem>
-              </UnorderedList>
-            </ListItem>
-          </UnorderedList>
-        </Box>
-
         <Box mt={8}>
           <Heading as="h2" size="lg" mb={4}>使用技術</Heading>
           <UnorderedList spacing={2}>
@@ -88,40 +56,44 @@ export default function Home() {
             <ListItem>GitHub（バージョン管理）</ListItem>
             <ListItem>NEWS API（記事取得）</ListItem>
             <ListItem>Google Text to Speech API（音声再生）</ListItem>
+            <ListItem>Google Translate API（翻訳）</ListItem>
+            <ListItem>Google Speech-to-Text API（音声認識）</ListItem>
           </UnorderedList>
         </Box>
 
         <Box mt={8}>
-          <Heading as="h2" size="lg" mb={4}>アプリの機能</Heading>
-          <UnorderedList spacing={2}>
-            <ListItem>ユーザー認証:EMAIL(ダミー),PASSWORD(6桁以上) </ListItem>
-            <ListItem>記事検索:検索ワード/MEDIA選択, 音声再生(US/UK), 保存</ListItem>
-            <ListItem>記事編集:保存記事の編集/削除, 編集:本文音声再生/表現登録</ListItem>
-            <ListItem>表現集:登録表現のリスト表示/音声再生</ListItem>
-          </UnorderedList>
-        </Box>
-
-        <Box mt={8}>
-          <Heading as="h2" size="lg" mb={4}>追加実装点：</Heading>
-          <UnorderedList spacing={2}>
+          <Heading as="h2" size="lg" mb={4}>アプリの機能と使用方法</Heading>
+          <UnorderedList spacing={3}>
             <ListItem>
-              <strong>音声認識機能の実装</strong>
+              ユーザー認証: EMAIL(ダミー), PASSWORD(6桁以上)でアカウント作成・ログイン
+            </ListItem>
+            <ListItem>
+              記事検索ページ:
               <UnorderedList>
-                <ListItem>英日での音声入力</ListItem>
+                <ListItem>検索ワード入力、MEDIA選択で主要英語メディアの記事検索</ListItem>
+                <ListItem>記事の音声再生(US/UK)、保存機能</ListItem>
               </UnorderedList>
             </ListItem>
             <ListItem>
-              <strong>翻訳機能の拡張</strong>
+              記事編集ページ:
               <UnorderedList>
-                <ListItem>本文の翻訳機能追加</ListItem>
-                <ListItem>翻訳結果を表現リストに追加する機能</ListItem>
-                <ListItem>翻訳UIの改良</ListItem>
+                <ListItem>保存した記事の編集・削除</ListItem>
+                <ListItem>本文の音声再生(US/UK)、翻訳機能</ListItem>
+                <ListItem>表現リストへの追加・編集機能</ListItem>
               </UnorderedList>
             </ListItem>
             <ListItem>
-              <strong>検索ページのUI改良</strong>
+              表現集ページ:
               <UnorderedList>
-                <ListItem>レスポンシブUI改良</ListItem>
+                <ListItem>登録した表現のリスト表示</ListItem>
+                <ListItem>表現の音声再生(US/UK)</ListItem>
+              </UnorderedList>
+            </ListItem>
+            <ListItem>
+              グローバルトークページ:
+              <UnorderedList>
+                <ListItem>多言語音声認識・翻訳機能</ListItem>
+                <ListItem>会議進行補助機能</ListItem>
               </UnorderedList>
             </ListItem>
           </UnorderedList>

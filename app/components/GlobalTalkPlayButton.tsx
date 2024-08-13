@@ -5,14 +5,17 @@ import { FaPlay, FaStop } from 'react-icons/fa';
 interface GlobalTalkPlayButtonProps {
   text: string;
   language: string;
+  onPlayButtonClick: () => void;
+  isDisabled: boolean;
 }
 
-export const GlobalTalkPlayButton: React.FC<GlobalTalkPlayButtonProps> = ({ text, language }) => {
+export const GlobalTalkPlayButton: React.FC<GlobalTalkPlayButtonProps> = ({ text, language, onPlayButtonClick, isDisabled }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handlePlay = async () => {
     if (isPlaying) return;
+    onPlayButtonClick();
     try {
       const response = await fetch('/api/text-to-speech', {
         method: 'POST',
@@ -52,7 +55,7 @@ export const GlobalTalkPlayButton: React.FC<GlobalTalkPlayButtonProps> = ({ text
       <ButtonGroup isAttached={false} variant='outline' spacing={2}>
         <Button
           onClick={handlePlay}
-          isDisabled={isPlaying}
+          isDisabled={isDisabled || isPlaying}
           colorScheme="blue"
           leftIcon={<Icon as={FaPlay} />}
         >
